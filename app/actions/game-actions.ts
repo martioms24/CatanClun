@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { sendPushToAll } from "@/lib/push/send";
 import type { NewGamePayload, Game, PlayerStats, Extension } from "@/types";
 
 // ─── Read helpers ────────────────────────────────────────────
@@ -111,6 +112,38 @@ export async function createGame(payload: NewGamePayload) {
       );
     if (extError) return { error: extError.message };
   }
+
+  // Notify everyone — include the winner if we can find one
+  let author: string | null = null;
+  if (user?.id) {
+    const { data: me } = await supabase
+      .from("players")
+      .select("name")
+      .eq("user_id", user.id)
+      .single();
+    author = me?.name ?? null;
+  }
+  let winnerName: string | null = null;
+  const winner = payload.results.find((r) => r.position === 1);
+  if (winner) {
+    const { data: wp } = await supabase
+      .from("players")
+      .select("name")
+      .eq("id", winner.player_id)
+      .single();
+    winnerName = wp?.name ?? null;
+  }
+  await sendPushToAll({
+    title: "Nova partida registrada!",
+    body: [
+      author && `Per ${author}`,
+      winnerName && `Guanyador: ${winnerName}`,
+    ]
+      .filter(Boolean)
+      .join(" · ") || "Hi ha una partida nova al tauler",
+    url: `/games/${game.id}`,
+    tag: "games",
+  });
 
   revalidatePath("/dashboard");
   revalidatePath("/games");
