@@ -30,7 +30,7 @@ export type GameResult = {
   id: string;
   game_id: string;
   player_id: string;
-  score: number;
+  score: number | null; // NULL for historical games without recorded scores
   position: number;
   // joined
   player?: Player;
@@ -47,7 +47,7 @@ export type PlayerStats = {
   current_streak: number;
   longest_streak: number;
   total_score: number;
-  podium_count: number; // top 3 finishes
+  podium_count: number;
 };
 
 export type ExtensionWinRate = {

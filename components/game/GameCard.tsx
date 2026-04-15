@@ -35,18 +35,12 @@ export function GameCard({ game }: GameCardProps) {
           )}
         </div>
 
-        {/* Player results */}
         <div className="flex flex-col gap-1.5 mb-3">
           {sorted.map((result) => (
-            <div
-              key={result.id}
-              className="flex items-center gap-2"
-            >
+            <div key={result.id} className="flex items-center gap-2">
               <span
                 className="w-6 text-center text-xs font-cinzel font-bold"
-                style={{
-                  color: result.position === 1 ? "#D4AF37" : "#8B8878",
-                }}
+                style={{ color: result.position === 1 ? "#D4AF37" : "#8B8878" }}
               >
                 {result.position === 1 ? "👑" : `${result.position}.`}
               </span>
@@ -57,13 +51,12 @@ export function GameCard({ game }: GameCardProps) {
                 {result.player?.name}
               </span>
               <span className="font-cinzel font-bold text-medieval-dark text-sm tabular-nums">
-                {result.score} pts
+                {result.score !== null ? `${result.score} pts` : "—"}
               </span>
             </div>
           ))}
         </div>
 
-        {/* Extensions */}
         {game.extensions && game.extensions.length > 0 && (
           <div className="flex items-start gap-1.5 flex-wrap">
             <Puzzle size={12} className="text-medieval-stone mt-0.5 shrink-0" />

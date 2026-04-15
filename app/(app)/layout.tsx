@@ -14,7 +14,7 @@ export default async function AppLayout({
       <main className="flex-1">{children}</main>
       <footer className="border-t-2 border-medieval-brown/20 py-3 text-center">
         <p className="font-garamond text-medieval-stone text-xs">
-          ⚔️ Catán Clune — Carcassonne Score Tracker ✦ {new Date().getFullYear()}
+          ⚔️ Catán Clune — Registre de Carcassonne ✦ {new Date().getFullYear()}
         </p>
       </footer>
     </div>

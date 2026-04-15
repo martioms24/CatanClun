@@ -9,9 +9,9 @@ import { LayoutDashboard, Swords, PlusCircle, LogOut, Menu, X } from "lucide-rea
 import { useState } from "react";
 
 const navLinks = [
-  { href: "/dashboard", label: "Tablero", icon: LayoutDashboard },
-  { href: "/games", label: "Partidas", icon: Swords },
-  { href: "/games/new", label: "Nueva Partida", icon: PlusCircle },
+  { href: "/dashboard", label: "Tauler", icon: LayoutDashboard },
+  { href: "/games", label: "Partides", icon: Swords },
+  { href: "/games/new", label: "Nova Partida", icon: PlusCircle },
 ];
 
 export function Navbar({ playerName }: { playerName?: string | null }) {
@@ -66,7 +66,7 @@ export function Navbar({ playerName }: { playerName?: string | null }) {
               className="flex items-center gap-1.5 text-parchment/70 hover:text-medieval-gold font-cinzel text-sm transition-colors"
             >
               <LogOut size={15} />
-              Salir
+              Sortir
             </button>
           </form>
         </div>
@@ -75,7 +75,7 @@ export function Navbar({ playerName }: { playerName?: string | null }) {
         <button
           className="md:hidden text-parchment p-1"
           onClick={() => setMenuOpen(!menuOpen)}
-          aria-label="Toggle menu"
+          aria-label="Obre el menú"
         >
           {menuOpen ? <X size={24} /> : <Menu size={24} />}
         </button>
@@ -112,7 +112,7 @@ export function Navbar({ playerName }: { playerName?: string | null }) {
                 className="flex items-center gap-3 px-4 py-3 rounded-medieval text-parchment/70 hover:text-medieval-gold font-cinzel text-base w-full transition-colors"
               >
                 <LogOut size={18} />
-                Cerrar sesión
+                Tancar sessió
               </button>
             </form>
           </div>

@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Card, CardHeader, CardTitle } from "@/components/ui/Card";
 import { MeepleIcon } from "@/components/ui/MeepleIcon";
 import type { PlayerStats } from "@/types";
-import { Trophy, TrendingUp, Target } from "lucide-react";
+import { Trophy, Zap, Star, TrendingUp } from "lucide-react";
 
 interface LeaderboardProps {
   stats: PlayerStats[];
@@ -28,7 +28,7 @@ export function Leaderboard({ stats, sortBy = "wins" }: LeaderboardProps) {
     <Card>
       <CardHeader>
         <Trophy size={18} className="text-medieval-gold" />
-        <CardTitle>Leaderboard</CardTitle>
+        <CardTitle>Classificació</CardTitle>
       </CardHeader>
       <div className="flex flex-col gap-2">
         {sorted.map((s, i) => (
@@ -37,44 +37,37 @@ export function Leaderboard({ stats, sortBy = "wins" }: LeaderboardProps) {
             href={`/players/${s.player.id}`}
             className="flex items-center gap-3 px-2 py-2.5 rounded-medieval hover:bg-medieval-gold/10 transition-colors group"
           >
-            {/* Position */}
             <span className="w-7 text-center text-lg shrink-0">
               {positionBadge(i)}
             </span>
-
-            {/* Meeple */}
             <MeepleIcon color={s.player.color} size={26} />
-
-            {/* Name */}
             <span className="font-cinzel font-semibold text-medieval-dark flex-1 group-hover:text-medieval-gold transition-colors">
               {s.player.name}
             </span>
-
-            {/* Stats */}
             <div className="flex items-center gap-4 text-right">
               <div className="hidden sm:block text-center">
                 <p className="font-cinzel font-bold text-medieval-dark text-sm">
                   {s.wins}
                 </p>
-                <p className="text-medieval-stone text-xs font-garamond">wins</p>
+                <p className="text-medieval-stone text-xs font-garamond">victòries</p>
               </div>
               <div className="hidden sm:block text-center">
                 <p className="font-cinzel font-bold text-medieval-dark text-sm">
                   {s.win_rate}%
                 </p>
-                <p className="text-medieval-stone text-xs font-garamond">rate</p>
+                <p className="text-medieval-stone text-xs font-garamond">taxa</p>
               </div>
               <div className="text-center">
                 <p className="font-cinzel font-bold text-medieval-dark text-sm">
                   {s.avg_score > 0 ? s.avg_score.toFixed(0) : "—"}
                 </p>
-                <p className="text-medieval-stone text-xs font-garamond">avg</p>
+                <p className="text-medieval-stone text-xs font-garamond">mitja</p>
               </div>
               <div className="text-center">
                 <p className="font-cinzel font-bold text-medieval-dark text-sm">
                   {s.games_played}
                 </p>
-                <p className="text-medieval-stone text-xs font-garamond">games</p>
+                <p className="text-medieval-stone text-xs font-garamond">partides</p>
               </div>
             </div>
           </Link>
@@ -82,13 +75,10 @@ export function Leaderboard({ stats, sortBy = "wins" }: LeaderboardProps) {
         {sorted.length === 0 && (
           <div className="text-center py-8 text-medieval-stone font-garamond">
             <Trophy size={32} className="mx-auto mb-2 opacity-30" />
-            <p>No games recorded yet.</p>
+            <p>Cap partida registrada.</p>
             <p className="text-sm">
-              <Link
-                href="/games/new"
-                className="text-medieval-gold underline"
-              >
-                Record your first game!
+              <Link href="/games/new" className="text-medieval-gold underline">
+                Registra la primera partida!
               </Link>
             </p>
           </div>
@@ -109,27 +99,27 @@ export function StatsCards({ stats }: { stats: PlayerStats[] }) {
   const cards = [
     {
       icon: "👑",
-      label: "Most Wins",
+      label: "Més Victòries",
       player: topWins,
-      value: topWins ? `${topWins.wins} wins` : "—",
+      value: topWins ? `${topWins.wins} victòries` : "—",
     },
     {
       icon: "⚡",
-      label: "Longest Streak",
+      label: "Ratxa Més Llarga",
       player: topStreak,
       value: topStreak?.longest_streak
-        ? `${topStreak.longest_streak} in a row`
+        ? `${topStreak.longest_streak} consecutives`
         : "—",
     },
     {
       icon: "🎯",
-      label: "Best Avg Score",
+      label: "Millor Mitja",
       player: topAvg,
       value: topAvg?.avg_score ? `${topAvg.avg_score.toFixed(0)} pts` : "—",
     },
     {
       icon: "🏆",
-      label: "All-time Best",
+      label: "Màxim Historial",
       player: topScore,
       value: topScore?.best_score ? `${topScore.best_score} pts` : "—",
     },

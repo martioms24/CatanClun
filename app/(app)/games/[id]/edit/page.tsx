@@ -23,9 +23,9 @@ export default async function EditGamePage({
     <div className="page-container">
       <h1 className="page-title flex items-center gap-2 mb-1">
         <Pencil size={28} />
-        Edit Game
+        Editar Partida
       </h1>
-      <p className="page-subtitle">Correct the records in the chronicles.</p>
+      <p className="page-subtitle">Corregeix els registres a les cròniques.</p>
       <NewGameForm players={players} extensions={extensions} editingGame={game} />
     </div>
   );

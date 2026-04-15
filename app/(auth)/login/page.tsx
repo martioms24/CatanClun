@@ -26,36 +26,31 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-dvh flex flex-col items-center justify-center p-6 bg-medieval-dark">
-      {/* Background decoration */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-32 -left-32 w-96 h-96 rounded-full bg-medieval-gold/5 blur-3xl" />
         <div className="absolute -bottom-32 -right-32 w-96 h-96 rounded-full bg-medieval-burgundy/10 blur-3xl" />
       </div>
 
       <div className="relative w-full max-w-sm">
-        {/* Header */}
         <div className="text-center mb-8">
           <div className="flex justify-center mb-4">
-            <div className="relative">
-              <div className="w-20 h-20 rounded-full bg-medieval-gold/20 border-4 border-medieval-gold flex items-center justify-center">
-                <MeepleIcon color="#D4AF37" size={44} />
-              </div>
+            <div className="w-20 h-20 rounded-full bg-medieval-gold/20 border-4 border-medieval-gold flex items-center justify-center">
+              <MeepleIcon color="#D4AF37" size={44} />
             </div>
           </div>
           <h1 className="font-cinzel text-3xl font-bold text-medieval-gold mb-1">
             Catán Clune
           </h1>
           <p className="font-garamond text-parchment/60 text-base">
-            Carcassonne Score Tracker
+            Registre de Partides de Carcassonne
           </p>
         </div>
 
-        {/* Login form */}
         <div className="bg-parchment rounded-medieval border-4 border-medieval-gold/60 shadow-medieval-lg p-6">
           <div className="flex items-center gap-2 mb-6">
             <div className="flex-1 border-t-2 border-medieval-brown/20" />
             <span className="font-cinzel text-sm text-medieval-stone">
-              ⚔️ Enter the Keep ⚔️
+              ⚔️ Entra a la Fortalesa ⚔️
             </span>
             <div className="flex-1 border-t-2 border-medieval-brown/20" />
           </div>
@@ -64,8 +59,8 @@ export default function LoginPage() {
             <Input
               name="email"
               type="email"
-              label="Email"
-              placeholder="your@email.com"
+              label="Correu electrònic"
+              placeholder="el.teu@correu.com"
               required
               autoComplete="email"
               icon={<Mail size={16} />}
@@ -73,7 +68,7 @@ export default function LoginPage() {
             <Input
               name="password"
               type="password"
-              label="Password"
+              label="Contrasenya"
               placeholder="••••••••"
               required
               autoComplete="current-password"
@@ -84,7 +79,7 @@ export default function LoginPage() {
               <div className="bg-medieval-burgundy/10 border border-medieval-burgundy/40 rounded-medieval px-3 py-2">
                 <p className="text-medieval-burgundy font-garamond text-sm">
                   {error === "Invalid login credentials"
-                    ? "Wrong email or password. Try again."
+                    ? "Correu o contrasenya incorrectes. Torna-ho a provar."
                     : error}
                 </p>
               </div>
@@ -96,13 +91,13 @@ export default function LoginPage() {
               size="lg"
               className="w-full mt-2"
             >
-              🏰 Enter
+              🏰 Entrar
             </Button>
           </form>
         </div>
 
         <p className="text-center text-parchment/30 font-garamond text-sm mt-6">
-          Only the Catán Clun fellowship may enter.
+          Només la germandat del Catán Clun pot entrar.
         </p>
       </div>
     </div>

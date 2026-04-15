@@ -34,7 +34,7 @@ export function DeleteGameButton({ gameId }: { gameId: string }) {
       loading={isPending}
     >
       <Trash2 size={14} />
-      {confirming ? "Confirm?" : "Delete"}
+      {confirming ? "Confirmar?" : "Eliminar"}
     </Button>
   );
 }

@@ -14,9 +14,11 @@ export default async function NewGamePage() {
     <div className="page-container">
       <h1 className="page-title flex items-center gap-2 mb-1">
         <PlusCircle size={28} />
-        New Game
+        Nova Partida
       </h1>
-      <p className="page-subtitle">Record a new Carcassonne battle in the chronicles.</p>
+      <p className="page-subtitle">
+        Registra una nova batalla de Carcassonne a les cròniques.
+      </p>
       <NewGameForm players={players} extensions={extensions} />
     </div>
   );

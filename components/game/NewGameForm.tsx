@@ -6,9 +6,12 @@ import { Button } from "@/components/ui/Button";
 import { Input, Textarea } from "@/components/ui/Input";
 import { Card, CardHeader, CardTitle } from "@/components/ui/Card";
 import { MeepleIcon } from "@/components/ui/MeepleIcon";
-import { Badge } from "@/components/ui/Badge";
 import { useToast } from "@/components/ui/Toast";
-import { createGame, updateGame, createCustomExtension } from "@/app/actions/game-actions";
+import {
+  createGame,
+  updateGame,
+  createCustomExtension,
+} from "@/app/actions/game-actions";
 import type { Player, Extension, Game } from "@/types";
 import { Plus, Check, Minus } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -39,12 +42,9 @@ export function NewGameForm({
   );
   const [notes, setNotes] = useState(editingGame?.notes ?? "");
 
-  // Player entries
   const [entries, setEntries] = useState<PlayerEntry[]>(() =>
     players.map((p) => {
-      const existing = editingGame?.results?.find(
-        (r) => r.player_id === p.id
-      );
+      const existing = editingGame?.results?.find((r) => r.player_id === p.id);
       return {
         player_id: p.id,
         score: existing?.score?.toString() ?? "",
@@ -53,7 +53,6 @@ export function NewGameForm({
     })
   );
 
-  // Extensions
   const [extensions, setExtensions] = useState<Extension[]>(initialExtensions);
   const [selectedExtIds, setSelectedExtIds] = useState<Set<string>>(
     new Set(editingGame?.extensions?.map((e) => e.id) ?? [])
@@ -100,27 +99,21 @@ export function NewGameForm({
     setAddingExt(false);
   }
 
-  function computePositions(
-    entries: PlayerEntry[]
-  ): { player_id: string; score: number; position: number }[] {
-    const included = entries
+  function computePositions(entries: PlayerEntry[]) {
+    return entries
       .filter((e) => e.included && e.score !== "")
       .map((e) => ({ player_id: e.player_id, score: parseInt(e.score, 10) }))
-      .sort((a, b) => b.score - a.score);
-
-    return included.map((e, i) => ({
-      ...e,
-      position: i + 1,
-    }));
+      .sort((a, b) => b.score - a.score)
+      .map((e, i) => ({ ...e, position: i + 1 }));
   }
 
   function validate(): string | null {
     const included = entries.filter((e) => e.included);
-    if (included.length < 2) return "Select at least 2 players.";
+    if (included.length < 2) return "Selecciona almenys 2 jugadors.";
     for (const e of included) {
       if (e.score === "" || isNaN(parseInt(e.score, 10)))
-        return "Enter a score for every selected player.";
-      if (parseInt(e.score, 10) < 0) return "Scores must be ≥ 0.";
+        return "Entra una puntuació per a cada jugador seleccionat.";
+      if (parseInt(e.score, 10) < 0) return "Les puntuacions han de ser ≥ 0.";
     }
     return null;
   }
@@ -152,7 +145,7 @@ export function NewGameForm({
       }
 
       showToast({
-        message: editingGame ? "Game updated!" : "Game saved!",
+        message: editingGame ? "Partida actualitzada!" : "Partida desada!",
         type: "success",
       });
 
@@ -168,10 +161,10 @@ export function NewGameForm({
 
   return (
     <div className="flex flex-col gap-6 max-w-xl mx-auto">
-      {/* Date */}
+      {/* Data */}
       <Card>
         <CardHeader>
-          <CardTitle>Date of the Game</CardTitle>
+          <CardTitle>Data de la Partida</CardTitle>
         </CardHeader>
         <Input
           type="date"
@@ -181,14 +174,14 @@ export function NewGameForm({
         />
       </Card>
 
-      {/* Players & Scores */}
+      {/* Jugadors i Puntuació */}
       <Card>
         <CardHeader>
-          <CardTitle>Players & Scores</CardTitle>
+          <CardTitle>Jugadors i Puntuació</CardTitle>
         </CardHeader>
         <p className="text-medieval-stone text-sm font-garamond mb-4">
-          Toggle players who participated, then enter their final scores.
-          Positions are calculated automatically.
+          Activa els jugadors que hi van participar i entra les puntuacions
+          finals. Les posicions es calculen automàticament.
         </p>
         <div className="flex flex-col gap-3">
           {entries.map((entry) => {
@@ -204,7 +197,6 @@ export function NewGameForm({
                     : "border-medieval-brown/20 bg-parchment-light/50"
                 )}
               >
-                {/* Toggle */}
                 <button
                   type="button"
                   onClick={() => togglePlayer(entry.player_id)}
@@ -229,7 +221,10 @@ export function NewGameForm({
                       type="button"
                       onClick={() => {
                         const current = parseInt(entry.score || "0", 10);
-                        setScore(entry.player_id, Math.max(0, current - 1).toString());
+                        setScore(
+                          entry.player_id,
+                          Math.max(0, current - 1).toString()
+                        );
                       }}
                       className="w-8 h-8 rounded-medieval border-2 border-medieval-brown/30 flex items-center justify-center text-medieval-brown hover:bg-parchment-dark"
                     >
@@ -269,7 +264,7 @@ export function NewGameForm({
       {/* Extensions */}
       <Card>
         <CardHeader>
-          <CardTitle>Extensions Used</CardTitle>
+          <CardTitle>Extensions Utilitzades</CardTitle>
         </CardHeader>
         <div className="flex flex-wrap gap-2 mb-4">
           {extensions.map((ext) => (
@@ -287,20 +282,19 @@ export function NewGameForm({
               {selectedExtIds.has(ext.id) && "✓ "}
               {ext.name}
               {!ext.is_official && (
-                <span className="ml-1 text-xs opacity-60">(custom)</span>
+                <span className="ml-1 text-xs opacity-60">(personalitzada)</span>
               )}
             </button>
           ))}
         </div>
 
-        {/* Add custom extension */}
         <div className="flex gap-2">
           <input
             type="text"
             value={newExtName}
             onChange={(e) => setNewExtName(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleAddCustomExt()}
-            placeholder="Add custom extension..."
+            placeholder="Afegeix extensió personalitzada..."
             className={cn(
               "flex-1 rounded-medieval border-2 border-medieval-brown/30 bg-parchment-light",
               "px-3 py-2 font-garamond text-sm text-medieval-dark placeholder:text-medieval-stone/60",
@@ -315,7 +309,7 @@ export function NewGameForm({
             loading={addingExt}
           >
             <Plus size={14} />
-            Add
+            Afegeix
           </Button>
         </div>
       </Card>
@@ -323,24 +317,23 @@ export function NewGameForm({
       {/* Notes */}
       <Card>
         <CardHeader>
-          <CardTitle>Notes (optional)</CardTitle>
+          <CardTitle>Notes (opcional)</CardTitle>
         </CardHeader>
         <Textarea
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
-          placeholder="Any memorable moments from this game..."
+          placeholder="Algun moment memorable d'aquesta partida..."
           rows={3}
         />
       </Card>
 
-      {/* Submit */}
       <Button
         onClick={handleSubmit}
         loading={isPending}
         size="lg"
         className="w-full"
       >
-        {editingGame ? "⚔️ Save Changes" : "🏰 Save Game"}
+        {editingGame ? "⚔️ Desa els Canvis" : "🏰 Desa la Partida"}
       </Button>
     </div>
   );

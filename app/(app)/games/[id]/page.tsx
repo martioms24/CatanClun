@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { MeepleIcon } from "@/components/ui/MeepleIcon";
 import { DeleteGameButton } from "./DeleteGameButton";
-import { formatDate, getPositionLabel } from "@/lib/utils";
+import { formatDate } from "@/lib/utils";
 import { Calendar, Pencil, Trophy, Puzzle, FileText } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -27,17 +27,16 @@ export default async function GameDetailPage({
 
   return (
     <div className="page-container max-w-2xl">
-      {/* Header */}
       <div className="flex items-start justify-between gap-3 mb-6">
         <div>
           <div className="flex items-center gap-2 text-medieval-stone font-garamond text-sm mb-1">
             <Calendar size={14} />
             {formatDate(game.played_at)}
           </div>
-          <h1 className="page-title mb-0">Game Detail</h1>
+          <h1 className="page-title mb-0">Detall de la Partida</h1>
           {winner?.player && (
             <p className="font-garamond text-medieval-stone text-base mt-0.5">
-              Winner:{" "}
+              Guanyador/a:{" "}
               <span className="font-cinzel font-bold text-medieval-dark">
                 {winner.player.name}
               </span>
@@ -48,18 +47,17 @@ export default async function GameDetailPage({
           <Link href={`/games/${id}/edit`}>
             <Button variant="secondary" size="sm">
               <Pencil size={14} />
-              Edit
+              Editar
             </Button>
           </Link>
           <DeleteGameButton gameId={id} />
         </div>
       </div>
 
-      {/* Results table */}
       <Card className="mb-4">
         <CardHeader>
           <Trophy size={16} className="text-medieval-gold" />
-          <CardTitle>Results</CardTitle>
+          <CardTitle>Resultats</CardTitle>
         </CardHeader>
         <div className="flex flex-col gap-3">
           {sorted.map((result) => (
@@ -92,15 +90,20 @@ export default async function GameDetailPage({
                 </>
               )}
               <span className="font-cinzel font-bold text-medieval-dark text-xl tabular-nums">
-                {result.score}
-                <span className="text-sm text-medieval-stone ml-1 font-normal">pts</span>
+                {result.score !== null ? (
+                  <>
+                    {result.score}
+                    <span className="text-sm text-medieval-stone ml-1 font-normal">pts</span>
+                  </>
+                ) : (
+                  <span className="text-sm text-medieval-stone font-normal">sense punts</span>
+                )}
               </span>
             </div>
           ))}
         </div>
       </Card>
 
-      {/* Extensions */}
       {game.extensions && game.extensions.length > 0 && (
         <Card className="mb-4">
           <CardHeader>
@@ -111,14 +114,13 @@ export default async function GameDetailPage({
             {game.extensions.map((ext) => (
               <Badge key={ext.id} variant={ext.is_official ? "gold" : "stone"}>
                 {ext.name}
-                {!ext.is_official && " (custom)"}
+                {!ext.is_official && " (personalitzada)"}
               </Badge>
             ))}
           </div>
         </Card>
       )}
 
-      {/* Notes */}
       {game.notes && (
         <Card>
           <CardHeader>
@@ -133,7 +135,7 @@ export default async function GameDetailPage({
 
       <div className="mt-6 flex gap-3">
         <Link href="/games">
-          <Button variant="ghost">← Back to Chronicles</Button>
+          <Button variant="ghost">← Tornar a les Cròniques</Button>
         </Link>
       </div>
     </div>

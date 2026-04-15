@@ -81,7 +81,6 @@ export async function createGame(payload: NewGamePayload) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // 1. Insert game
   const { data: game, error: gameError } = await supabase
     .from("games")
     .insert({
@@ -94,7 +93,6 @@ export async function createGame(payload: NewGamePayload) {
 
   if (gameError) return { error: gameError.message };
 
-  // 2. Insert results
   if (payload.results.length > 0) {
     const { error: resultsError } = await supabase.from("game_results").insert(
       payload.results.map((r) => ({ ...r, game_id: game.id }))
@@ -102,7 +100,6 @@ export async function createGame(payload: NewGamePayload) {
     if (resultsError) return { error: resultsError.message };
   }
 
-  // 3. Insert extension links
   if (payload.extension_ids.length > 0) {
     const { error: extError } = await supabase
       .from("game_extensions")
@@ -123,7 +120,6 @@ export async function createGame(payload: NewGamePayload) {
 export async function updateGame(id: string, payload: NewGamePayload) {
   const supabase = await createClient();
 
-  // 1. Update game header
   const { error: gameError } = await supabase
     .from("games")
     .update({ played_at: payload.played_at, notes: payload.notes ?? null })
@@ -131,7 +127,6 @@ export async function updateGame(id: string, payload: NewGamePayload) {
 
   if (gameError) return { error: gameError.message };
 
-  // 2. Replace results (delete + insert)
   await supabase.from("game_results").delete().eq("game_id", id);
   if (payload.results.length > 0) {
     const { error: resultsError } = await supabase.from("game_results").insert(
@@ -140,7 +135,6 @@ export async function updateGame(id: string, payload: NewGamePayload) {
     if (resultsError) return { error: resultsError.message };
   }
 
-  // 3. Replace extensions
   await supabase.from("game_extensions").delete().eq("game_id", id);
   if (payload.extension_ids.length > 0) {
     const { error: extError } = await supabase
@@ -209,15 +203,29 @@ export async function getPlayerStats(): Promise<PlayerStats[]> {
     const gamesPlayed = playerResults.length;
     const wins = playerResults.filter((r) => r.position === 1).length;
     const winRate = gamesPlayed > 0 ? (wins / gamesPlayed) * 100 : 0;
-    const avgScore =
-      gamesPlayed > 0
-        ? playerResults.reduce((acc, r) => acc + r.score, 0) / gamesPlayed
-        : 0;
-    const bestResult = playerResults.reduce(
-      (best, r) => (r.score > (best?.score ?? -1) ? r : best),
-      null as (typeof results)[0] | null
+
+    // Only use non-null scores for avg/best calculations
+    const scoredResults = playerResults.filter(
+      (r) => r.score !== null && r.score !== undefined
     );
-    const totalScore = playerResults.reduce((acc, r) => acc + r.score, 0);
+    const avgScore =
+      scoredResults.length > 0
+        ? scoredResults.reduce((acc, r) => acc + (r.score as number), 0) /
+          scoredResults.length
+        : 0;
+    const bestResult =
+      scoredResults.length > 0
+        ? scoredResults.reduce(
+            (best, r) =>
+              (r.score as number) > ((best?.score as number) ?? -1) ? r : best,
+            null as (typeof results)[0] | null
+          )
+        : null;
+
+    const totalScore = playerResults.reduce(
+      (acc, r) => acc + (r.score ?? 0),
+      0
+    );
     const podiumCount = playerResults.filter((r) => r.position <= 3).length;
 
     // Streaks: sort by played_at
@@ -225,10 +233,8 @@ export async function getPlayerStats(): Promise<PlayerStats[]> {
       (a.game?.played_at ?? "").localeCompare(b.game?.played_at ?? "")
     );
 
-    let currentStreak = 0;
     let longestStreak = 0;
     let tempStreak = 0;
-
     for (const r of sortedResults) {
       if (r.position === 1) {
         tempStreak++;
@@ -238,7 +244,7 @@ export async function getPlayerStats(): Promise<PlayerStats[]> {
       }
     }
 
-    // Current streak = streak at the end of sorted list
+    let currentStreak = 0;
     for (let i = sortedResults.length - 1; i >= 0; i--) {
       if (sortedResults[i].position === 1) currentStreak++;
       else break;
@@ -250,7 +256,7 @@ export async function getPlayerStats(): Promise<PlayerStats[]> {
       wins,
       win_rate: Math.round(winRate * 10) / 10,
       avg_score: Math.round(avgScore * 10) / 10,
-      best_score: bestResult?.score ?? 0,
+      best_score: (bestResult?.score as number) ?? 0,
       best_score_game_id: bestResult?.game_id ?? null,
       current_streak: currentStreak,
       longest_streak: longestStreak,
@@ -292,8 +298,11 @@ export async function getExtensionWinRates(playerId: string) {
 
   for (const result of data ?? []) {
     const gameExts =
-      (result.game as unknown as { game_extensions: { extension: Extension }[] })
-        ?.game_extensions ?? [];
+      (
+        result.game as unknown as {
+          game_extensions: { extension: Extension }[];
+        }
+      )?.game_extensions ?? [];
 
     for (const ge of gameExts) {
       const ext = ge.extension;

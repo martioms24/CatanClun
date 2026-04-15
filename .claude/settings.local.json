@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "WebFetch(domain:www.ultraboardgames.com)",
+      "WebFetch(domain:wikicarpedia.com)",
+      "WebFetch(domain:carcassonne.fandom.com)",
+      "WebFetch(domain:boardgamesquad.com)",
+      "WebFetch(domain:images.zmangames.com)",
+      "WebFetch(domain:medium.com)",
+      "WebFetch(domain:hexagamers.com)",
+      "WebFetch(domain:en.wikipedia.org)",
+      "Bash(npx create-next-app@latest . --typescript --tailwind --eslint --app --src-dir=false --import-alias=\"@/*\" --no-turbopack)",
+      "Bash(npx create-next-app@latest . --typescript --tailwind --eslint --app --src-dir=false --import-alias=\"@/*\" --no-turbopack --yes)",
+      "Bash(npx create-next-app@latest . --typescript --tailwind --eslint --app --src-dir=false '--import-alias=@/*' --no-turbopack)",
+      "Bash(npm install *)",
+      "Bash(npm run *)",
+      "Bash(vercel login *)",
+      "Bash(vercel --version)",
+      "Bash(vercel whoami *)",
+      "Bash(vercel --prod --yes -e NEXT_PUBLIC_SUPABASE_URL=https://ionaxkoyvmtwixhuooxm.supabase.co -e NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlvbmF4a295dm10d2l4aHVvb3htIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyODY4NzAsImV4cCI6MjA5MTg2Mjg3MH0.xVvhKIRhGuGLJ3Uc_SzpdEa5x1kE1va4oDon4vxI5zY -e SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlvbmF4a295dm10d2l4aHVvb3htIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NjI4Njg3MCwiZXhwIjoyMDkxODYyODcwfQ.YmATkm2c8YyOwBTajfYX_9JeFqTdMy86BI_5Q-unUBw)",
+      "Bash(vercel --prod --yes --name catan-clun -e NEXT_PUBLIC_SUPABASE_URL=https://ionaxkoyvmtwixhuooxm.supabase.co -e NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlvbmF4a295dm10d2l4aHVvb3htIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyODY4NzAsImV4cCI6MjA5MTg2Mjg3MH0.xVvhKIRhGuGLJ3Uc_SzpdEa5x1kE1va4oDon4vxI5zY -e SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlvbmF4a295dm10d2l4aHVvb3htIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NjI4Njg3MCwiZXhwIjoyMDkxODYyODcwfQ.YmATkm2c8YyOwBTajfYX_9JeFqTdMy86BI_5Q-unUBw)"
+    ]
+  }
+}
