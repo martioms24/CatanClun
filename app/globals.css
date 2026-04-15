@@ -1,0 +1,99 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-cinzel: "Cinzel", serif;
+  --font-garamond: "EB Garamond", Georgia, serif;
+}
+
+@layer base {
+  html {
+    font-family: var(--font-garamond);
+  }
+
+  body {
+    @apply bg-parchment text-medieval-dark;
+    background-image:
+      radial-gradient(ellipse at 20% 50%, rgba(212, 175, 55, 0.04) 0%, transparent 60%),
+      radial-gradient(ellipse at 80% 20%, rgba(92, 51, 23, 0.05) 0%, transparent 60%);
+    min-height: 100dvh;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-cinzel);
+  }
+
+  /* Number inputs — remove spinners */
+  input[type=number]::-webkit-inner-spin-button,
+  input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  input[type=number] {
+    -moz-appearance: textfield;
+  }
+}
+
+@layer components {
+  .page-container {
+    @apply max-w-5xl mx-auto px-4 py-6;
+  }
+
+  .page-title {
+    @apply font-cinzel text-2xl sm:text-3xl font-bold text-medieval-dark mb-1;
+  }
+
+  .page-subtitle {
+    @apply font-garamond text-medieval-stone text-base mb-6;
+  }
+
+  .divider-ornament {
+    @apply flex items-center gap-3 text-medieval-gold/50 my-4;
+  }
+
+  .divider-ornament::before,
+  .divider-ornament::after {
+    content: "";
+    @apply flex-1 border-t border-medieval-gold/30;
+  }
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Focus visible for accessibility */
+*:focus-visible {
+  outline: 2px solid #D4AF37;
+  outline-offset: 2px;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #F5E6C8;
+}
+::-webkit-scrollbar-thumb {
+  background: #8B4513;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #5C3317;
+}
+
+/* Parchment texture overlay via pseudo-element */
+.parchment-bg {
+  position: relative;
+}
+.parchment-bg::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+  border-radius: inherit;
+}
