@@ -9,6 +9,13 @@ self.addEventListener("activate", (event) => {
   event.waitUntil(self.clients.claim());
 });
 
+// Minimal fetch handler — Chrome/Android require a registered service worker
+// with a fetch listener to consider the site a valid installable PWA.
+// We do not cache anything; just pass through to the network.
+self.addEventListener("fetch", () => {
+  // No-op — default browser handling applies.
+});
+
 self.addEventListener("push", (event) => {
   let payload = { title: "Catán Clun", body: "Tens una notificació nova" };
   try {

@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Cinzel, EB_Garamond } from "next/font/google";
 import { ToastProvider } from "@/components/ui/Toast";
+import { ServiceWorkerRegister } from "@/components/notifications/ServiceWorkerRegister";
 import "./globals.css";
 
 const cinzel = Cinzel({
@@ -52,6 +53,7 @@ export default function RootLayout({
   return (
     <html lang="es" className={`${cinzel.variable} ${ebGaramond.variable}`}>
       <body>
+        <ServiceWorkerRegister />
         <ToastProvider>{children}</ToastProvider>
       </body>
     </html>
