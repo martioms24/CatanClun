@@ -88,33 +88,46 @@ export async function getRecentActivity(
   }
 
   // Recent bets
-  const { data: bets } = await supabase
-    .from("bets")
-    .select("id, title, status, created_at, resolved_at, creator:players!bets_created_by_fkey(name), winning_option:bet_options!fk_bets_winning_option(label)")
-    .order("created_at", { ascending: false })
-    .limit(limit);
+  try {
+    const { data: bets } = await supabase
+      .from("bets")
+      .select("id, title, status, created_at, resolved_at, winning_option_id, creator:players!bets_created_by_fkey(name)")
+      .order("created_at", { ascending: false })
+      .limit(limit);
 
-  if (bets) {
-    for (const b of bets) {
-      const creator = b.creator as unknown as { name: string };
-      if (b.status === "resolved") {
-        const winOpt = b.winning_option as unknown as { label: string } | null;
+    if (bets) {
+      for (const b of bets) {
+        const creator = b.creator as unknown as { name: string };
+        if (b.status === "resolved") {
+          // Get winning option label
+          let winLabel = "?";
+          if (b.winning_option_id) {
+            const { data: opt } = await supabase
+              .from("bet_options")
+              .select("label")
+              .eq("id", b.winning_option_id)
+              .single();
+            if (opt) winLabel = opt.label;
+          }
+          items.push({
+            type: "bet_resolved",
+            date: (b.resolved_at ?? b.created_at).slice(0, 10),
+            title: `Aposta resolta: ${b.title}`,
+            description: `Resultat: ${winLabel}`,
+            link: "/gambling",
+          });
+        }
         items.push({
-          type: "bet_resolved",
-          date: (b.resolved_at ?? b.created_at).slice(0, 10),
-          title: `Aposta resolta: ${b.title}`,
-          description: `Resultat: ${winOpt?.label ?? "?"}`,
+          type: "bet_created",
+          date: b.created_at.slice(0, 10),
+          title: `Nova aposta: ${b.title}`,
+          description: `Creada per ${creator?.name ?? "Desconegut"}`,
           link: "/gambling",
         });
       }
-      items.push({
-        type: "bet_created",
-        date: b.created_at.slice(0, 10),
-        title: `Nova aposta: ${b.title}`,
-        description: `Creada per ${creator?.name ?? "Desconegut"}`,
-        link: "/gambling",
-      });
     }
+  } catch {
+    // bets table may not exist yet
   }
 
   // Sort by date descending

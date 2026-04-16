@@ -42,7 +42,11 @@
       "Bash(curl -sL https://catan-clun.vercel.app/manifest.json)",
       "Bash(curl -sI https://catan-clun.vercel.app/sw.js)",
       "Bash(npx next *)",
-      "Bash(npx vercel *)"
+      "Bash(npx vercel *)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3099/gambling)",
+      "Bash(curl -s http://localhost:3099/gambling)",
+      "Bash(curl -s -L http://localhost:3099/gambling)",
+      "Bash(taskkill //F //IM \"node.exe\")"
     ]
   }
 }

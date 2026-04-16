@@ -120,7 +120,10 @@ export async function getBets(): Promise<Bet[]> {
     )
     .order("created_at", { ascending: false });
 
-  if (error) throw new Error(error.message);
+  if (error) {
+    console.error("[gambling] getBets error:", error.message);
+    return [];
+  }
   return (data as Bet[]) ?? [];
 }
 
