@@ -115,6 +115,7 @@ export function QuedadesBoard({
               key={quedada.id}
               quedada={quedada}
               currentPlayerId={currentPlayerId}
+              players={players}
             />
           ))}
         </div>

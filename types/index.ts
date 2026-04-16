@@ -99,6 +99,16 @@ export type QuedadaParticipant = {
   player?: Player;
 };
 
+// Forum posts
+export type ForumPost = {
+  id: string;
+  title: string;
+  body: string;
+  author_id: string;
+  created_at: string;
+  author?: Player;
+};
+
 // Gambling
 export type BetStatus = "open" | "closed" | "resolved";
 

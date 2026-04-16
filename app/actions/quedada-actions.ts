@@ -145,6 +145,110 @@ export async function respondToQuedada(
   return { error: null };
 }
 
+export async function updateQuedada(
+  id: string,
+  date: string,
+  description: string | undefined,
+  participantIds: string[]
+) {
+  if (participantIds.length < 2)
+    return { error: "Cal seleccionar almenys 2 participants." };
+
+  const supabase = await createClient();
+  const creatorId = await getCurrentPlayerId(supabase);
+  if (!creatorId) return { error: "No s'ha pogut identificar l'usuari." };
+
+  // Update date + description
+  const { error: updateErr } = await supabase
+    .from("quedadas")
+    .update({
+      date,
+      description: description?.trim() || null,
+    })
+    .eq("id", id);
+
+  if (updateErr) return { error: updateErr.message };
+
+  // Get current participants
+  const { data: currentParticipants } = await supabase
+    .from("quedada_participants")
+    .select("player_id")
+    .eq("quedada_id", id);
+
+  const currentIds = new Set(
+    currentParticipants?.map((p) => p.player_id) ?? []
+  );
+
+  // Add new participants (those in participantIds but not in currentIds)
+  const newIds = participantIds.filter((pid) => !currentIds.has(pid));
+  if (newIds.length > 0) {
+    const newParticipants = newIds.map((pid) => ({
+      quedada_id: id,
+      player_id: pid,
+      status: "pending" as const,
+    }));
+
+    const { error: insertErr } = await supabase
+      .from("quedada_participants")
+      .insert(newParticipants);
+
+    if (insertErr) return { error: insertErr.message };
+
+    // Send push to newly added participants
+    const creatorName = await getCurrentPlayerName(supabase);
+    const dateStr = new Date(date).toLocaleDateString("ca-ES", {
+      day: "numeric",
+      month: "long",
+    });
+
+    for (const pid of newIds) {
+      await sendPushToPlayer(pid, {
+        title: "T'han afegit a una quedada!",
+        body: `${creatorName ?? "Algú"} t'ha afegit a la quedada del ${dateStr}. Confirma!`,
+        url: "/plans/quedades",
+        tag: `quedada-${id}`,
+      });
+    }
+  }
+
+  // Remove participants no longer in the list (but not the creator)
+  const removedIds = [...currentIds].filter(
+    (pid) => !participantIds.includes(pid) && pid !== creatorId
+  );
+  if (removedIds.length > 0) {
+    await supabase
+      .from("quedada_participants")
+      .delete()
+      .eq("quedada_id", id)
+      .in("player_id", removedIds);
+
+    // Recalculate quedada status after removal
+    // Reset to pending if it was rejected due to a now-removed participant
+    const { data: remaining } = await supabase
+      .from("quedada_participants")
+      .select("status")
+      .eq("quedada_id", id);
+
+    if (remaining) {
+      const hasRejected = remaining.some((p) => p.status === "rejected");
+      const allConfirmed = remaining.every((p) => p.status === "confirmed");
+      const newStatus = hasRejected
+        ? "rejected"
+        : allConfirmed
+        ? "confirmed"
+        : "pending";
+      await supabase
+        .from("quedadas")
+        .update({ status: newStatus })
+        .eq("id", id);
+    }
+  }
+
+  revalidatePath("/plans");
+  revalidatePath("/forum");
+  return { error: null };
+}
+
 export async function deleteQuedada(id: string) {
   const supabase = await createClient();
   const { error } = await supabase.from("quedadas").delete().eq("id", id);

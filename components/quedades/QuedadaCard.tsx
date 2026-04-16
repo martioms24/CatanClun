@@ -2,33 +2,47 @@
 
 import { useState, useTransition } from "react";
 import { Card } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
 import { MeepleIcon } from "@/components/ui/MeepleIcon";
-import { respondToQuedada, deleteQuedada } from "@/app/actions/quedada-actions";
+import {
+  respondToQuedada,
+  deleteQuedada,
+  updateQuedada,
+} from "@/app/actions/quedada-actions";
 import { cn } from "@/lib/utils";
-import type { Quedada } from "@/types";
+import type { Quedada, Player } from "@/types";
 import {
   Check,
   X,
   Trash2,
   Clock,
   CalendarDays,
+  Pencil,
 } from "lucide-react";
 
 export function QuedadaCard({
   quedada,
   currentPlayerId,
+  players,
 }: {
   quedada: Quedada;
   currentPlayerId: string | null;
+  players: Player[];
 }) {
   const [isPending, startTransition] = useTransition();
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [editDate, setEditDate] = useState(quedada.date);
+  const [editDesc, setEditDesc] = useState(quedada.description ?? "");
+  const [editParticipants, setEditParticipants] = useState<Set<string>>(
+    new Set(quedada.participants?.map((p) => p.player_id) ?? [])
+  );
+  const [editError, setEditError] = useState<string | null>(null);
 
-  const dateStr = new Date(quedada.date + "T00:00:00").toLocaleDateString("ca-ES", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-  });
+  const dateStr = new Date(quedada.date + "T00:00:00").toLocaleDateString(
+    "ca-ES",
+    { weekday: "long", day: "numeric", month: "long" }
+  );
 
   const myParticipation = quedada.participants?.find(
     (p) => p.player_id === currentPlayerId
@@ -59,6 +73,47 @@ export function QuedadaCard({
     });
   }
 
+  function startEdit() {
+    setEditDate(quedada.date);
+    setEditDesc(quedada.description ?? "");
+    setEditParticipants(
+      new Set(quedada.participants?.map((p) => p.player_id) ?? [])
+    );
+    setEditError(null);
+    setEditing(true);
+  }
+
+  function toggleEditPlayer(id: string) {
+    setEditParticipants((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
+  function handleSaveEdit(e: React.FormEvent) {
+    e.preventDefault();
+    setEditError(null);
+    if (editParticipants.size < 2) {
+      setEditError("Cal almenys 2 participants.");
+      return;
+    }
+    startTransition(async () => {
+      const result = await updateQuedada(
+        quedada.id,
+        editDate,
+        editDesc || undefined,
+        Array.from(editParticipants)
+      );
+      if (result.error) {
+        setEditError(result.error);
+        return;
+      }
+      setEditing(false);
+    });
+  }
+
   const variant =
     quedada.status === "confirmed"
       ? "gold"
@@ -66,12 +121,99 @@ export function QuedadaCard({
       ? "stone"
       : "parchment";
 
+  // ── Edit mode ─────────────────────────────────────────────
+  if (editing) {
+    return (
+      <Card className={cn("transition-opacity", isPending && "opacity-50")}>
+        <form onSubmit={handleSaveEdit} className="flex flex-col gap-3">
+          <p className="font-cinzel text-medieval-dark text-sm font-semibold">
+            Editar quedada
+          </p>
+          <div>
+            <label className="font-garamond text-medieval-stone text-xs mb-1 block">
+              Data
+            </label>
+            <input
+              type="date"
+              value={editDate}
+              onChange={(e) => setEditDate(e.target.value)}
+              className="w-full px-3 py-2 rounded-medieval border-2 border-medieval-brown/30 bg-parchment-light font-garamond text-medieval-dark text-sm focus:outline-none focus:border-medieval-gold transition-colors"
+            />
+          </div>
+          <div>
+            <label className="font-garamond text-medieval-stone text-xs mb-1 block">
+              Descripció (opcional)
+            </label>
+            <input
+              type="text"
+              value={editDesc}
+              onChange={(e) => setEditDesc(e.target.value)}
+              placeholder="Què fareu?"
+              maxLength={200}
+              className="w-full px-3 py-2 rounded-medieval border-2 border-medieval-brown/30 bg-parchment-light font-garamond text-medieval-dark text-sm focus:outline-none focus:border-medieval-gold transition-colors"
+            />
+          </div>
+          <div>
+            <label className="font-garamond text-medieval-stone text-xs mb-1.5 block">
+              Participants ({editParticipants.size})
+            </label>
+            <div className="flex flex-wrap gap-1.5">
+              {players.map((p) => {
+                const selected = editParticipants.has(p.id);
+                return (
+                  <button
+                    key={p.id}
+                    type="button"
+                    onClick={() => toggleEditPlayer(p.id)}
+                    className={cn(
+                      "flex items-center gap-1.5 px-2 py-1 rounded-medieval border text-xs font-garamond transition-all",
+                      selected
+                        ? "bg-medieval-gold/20 border-medieval-gold text-medieval-dark font-semibold"
+                        : "bg-parchment-light border-medieval-brown/20 text-medieval-stone hover:border-medieval-brown/40"
+                    )}
+                  >
+                    <MeepleIcon color={p.color} size={14} name={p.name} />
+                    {p.name}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+          {editError && (
+            <p className="font-garamond text-red-700 text-sm">{editError}</p>
+          )}
+          <div className="flex gap-2">
+            <Button
+              type="submit"
+              variant="primary"
+              size="sm"
+              loading={isPending}
+            >
+              <Check size={14} />
+              Desar
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => setEditing(false)}
+            >
+              <X size={14} />
+              Cancel·lar
+            </Button>
+          </div>
+        </form>
+      </Card>
+    );
+  }
+
+  // ── View mode ─────────────────────────────────────────────
   return (
     <Card
       variant={variant}
       className={cn("transition-opacity", isPending && "opacity-50")}
     >
-      {/* Header: date + description */}
+      {/* Header */}
       <div className="flex items-start justify-between gap-3 mb-3">
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-1">
@@ -93,7 +235,6 @@ export function QuedadaCard({
           </p>
         </div>
 
-        {/* Status badge */}
         <span
           className={cn(
             "shrink-0 px-2 py-0.5 rounded-full font-cinzel text-xs font-semibold",
@@ -164,7 +305,15 @@ export function QuedadaCard({
         )}
 
         {isCreator && (
-          <div className="ml-auto">
+          <div className="flex items-center gap-1 ml-auto">
+            <button
+              onClick={startEdit}
+              disabled={isPending}
+              aria-label="Editar"
+              className="p-1.5 rounded-medieval border border-medieval-brown/30 bg-parchment-light text-medieval-brown hover:bg-parchment transition-colors disabled:opacity-50"
+            >
+              <Pencil size={14} />
+            </button>
             {confirmDelete ? (
               <button
                 onClick={handleDelete}
