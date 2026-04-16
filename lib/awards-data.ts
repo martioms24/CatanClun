@@ -267,7 +267,7 @@ export const PLAYER_AWARD_NAMES: Record<string, string[]> = {
   Martí: ["Martí"],
   Marcel: ["Marcelo", "Marcel"],
   Alejandro: ["Alejandro"],
-  Nacho: ["Nacho"],
+  Nacho: ["Nacho", "Ignasi Vera"],
   Eudald: ["Eudaldo el Farras"],
   Iván: ["Ivan"],
   Gaba: ["Marc Gaba"],
