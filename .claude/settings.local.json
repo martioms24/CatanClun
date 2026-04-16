@@ -41,7 +41,8 @@
       "Bash(curl -s https://catan-clun.vercel.app/manifest.json)",
       "Bash(curl -sL https://catan-clun.vercel.app/manifest.json)",
       "Bash(curl -sI https://catan-clun.vercel.app/sw.js)",
-      "Bash(npx next *)"
+      "Bash(npx next *)",
+      "Bash(npx vercel *)"
     ]
   }
 }

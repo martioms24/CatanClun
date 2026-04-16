@@ -19,6 +19,8 @@ import {
   Calendar,
   CalendarHeart,
   ListTodo,
+  MessageSquare,
+  Dices,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -31,6 +33,12 @@ type NavLink = {
 
 const mainLinks: NavLink[] = [
   {
+    href: "/forum",
+    label: "Fòrum",
+    icon: MessageSquare,
+    activePrefixes: ["/forum"],
+  },
+  {
     href: "/dashboard",
     label: "Carcassonne",
     icon: Castle,
@@ -42,6 +50,12 @@ const mainLinks: NavLink[] = [
     label: "Premis",
     icon: Award,
     activePrefixes: ["/awards"],
+  },
+  {
+    href: "/gambling",
+    label: "Gambling",
+    icon: Dices,
+    activePrefixes: ["/gambling"],
   },
 ];
 
@@ -142,7 +156,7 @@ export function Navbar({ playerName, playerId }: { playerName?: string | null; p
       <div className="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between gap-4">
         {/* Logo */}
         <Link
-          href="/dashboard"
+          href="/forum"
           className="flex items-center shrink-0"
           onClick={() => setMenuOpen(false)}
         >

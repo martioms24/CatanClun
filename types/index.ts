@@ -99,6 +99,58 @@ export type QuedadaParticipant = {
   player?: Player;
 };
 
+// Gambling
+export type BetStatus = "open" | "closed" | "resolved";
+
+export type Bet = {
+  id: string;
+  title: string;
+  created_by: string;
+  status: BetStatus;
+  winning_option_id: string | null;
+  created_at: string;
+  resolved_at: string | null;
+  // joined
+  creator?: Player;
+  options?: BetOption[];
+  wagers?: BetWager[];
+};
+
+export type BetOption = {
+  id: string;
+  bet_id: string;
+  label: string;
+};
+
+export type BetWager = {
+  id: string;
+  bet_id: string;
+  option_id: string;
+  player_id: string;
+  amount: number;
+  payout: number;
+  created_at: string;
+  // joined
+  player?: Player;
+};
+
+export type PlayerPoints = {
+  player: Player;
+  earned: number;       // from activity
+  wagered: number;      // total bet
+  won: number;          // total payouts
+  balance: number;      // earned - wagered + won
+};
+
+// Forum activity
+export type ActivityItem = {
+  type: "game" | "quedada" | "plan" | "bet_created" | "bet_resolved";
+  date: string;
+  title: string;
+  description?: string;
+  link?: string;
+};
+
 // Profile stats
 export type QuedadaStats = {
   total_attended: number;
