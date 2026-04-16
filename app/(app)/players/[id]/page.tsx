@@ -214,7 +214,7 @@ export default async function PlayerProfilePage({
         </div>
       </Card>
 
-      {scoreHistory.length >= 2 && (
+      {scoreHistory.length >= 1 && (
         <Card className="mb-5">
           <CardHeader>
             <TrendingUp size={16} className="text-medieval-gold" />
