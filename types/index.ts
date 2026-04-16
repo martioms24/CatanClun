@@ -99,6 +99,24 @@ export type QuedadaParticipant = {
   player?: Player;
 };
 
+// Rewards
+export type RewardType = "birra" | "cubata" | "tiktok" | "sopar";
+
+export type Redemption = {
+  id: string;
+  reward_type: RewardType;
+  cost: number;
+  redeemed_by: string;
+  target_player: string | null;
+  description: string | null;
+  status: "pending" | "completed";
+  created_at: string;
+  completed_at: string | null;
+  // joined
+  redeemer?: Player;
+  target?: Player;
+};
+
 // Forum posts
 export type ForumPost = {
   id: string;

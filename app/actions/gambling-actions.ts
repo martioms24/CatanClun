@@ -70,6 +70,11 @@ export async function getPlayerPointsAll(): Promise<PlayerPoints[]> {
     .from("bet_wagers")
     .select("player_id, amount, payout");
 
+  // Redemptions per player
+  const { data: redemptions } = await supabase
+    .from("redemptions")
+    .select("redeemed_by, cost");
+
   const today = new Date().toISOString().slice(0, 10);
 
   return players.map((player: Player) => {
@@ -94,12 +99,16 @@ export async function getPlayerPointsAll(): Promise<PlayerPoints[]> {
     const wagered = playerWagers.reduce((sum, w) => sum + w.amount, 0);
     const won = playerWagers.reduce((sum, w) => sum + w.payout, 0);
 
+    // Redemptions
+    const playerRedemptions = redemptions?.filter((r) => r.redeemed_by === player.id) ?? [];
+    const redeemed = playerRedemptions.reduce((sum, r) => sum + r.cost, 0);
+
     return {
       player,
       earned,
       wagered,
       won,
-      balance: earned - wagered + won,
+      balance: earned - wagered + won - redeemed,
     };
   });
 }
