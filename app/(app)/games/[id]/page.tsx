@@ -80,7 +80,7 @@ export default async function GameDetailPage({
               </span>
               {result.player && (
                 <>
-                  <MeepleIcon color={result.player.color} size={28} />
+                  <MeepleIcon color={result.player.color} size={28} name={result.player.name} />
                   <Link
                     href={`/players/${result.player.id}`}
                     className="font-cinzel font-semibold text-medieval-dark hover:text-medieval-gold transition-colors flex-1 text-base"

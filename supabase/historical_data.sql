@@ -1,5 +1,5 @@
 -- ============================================================
--- Catán Clune — Historical Data Migration
+-- Catan Clun — Historical Data Migration
 -- Run this in Supabase → SQL Editor
 --
 -- What this does:

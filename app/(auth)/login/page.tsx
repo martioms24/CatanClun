@@ -39,7 +39,7 @@ export default function LoginPage() {
             </div>
           </div>
           <h1 className="font-cinzel text-3xl font-bold text-medieval-gold mb-1">
-            Catán Clune
+            Catan Clun
           </h1>
           <p className="font-garamond text-parchment/60 text-base">
             Registre de Partides de Carcassonne
@@ -97,7 +97,7 @@ export default function LoginPage() {
         </div>
 
         <p className="text-center text-parchment/30 font-garamond text-sm mt-6">
-          Només la germandat del Catán Clun pot entrar.
+          Només la germandat del Catan Clun pot entrar.
         </p>
       </div>
     </div>

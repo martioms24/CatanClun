@@ -1,8 +1,7 @@
 import { createServerClient, type CookieMethodsServer } from "@supabase/ssr";
 import { cookies } from "next/headers";
-import type { ResponseCookie } from "next/dist/compiled/@edge-runtime/cookies";
 
-type CookieToSet = { name: string; value: string; options?: Partial<ResponseCookie> };
+type CookieToSet = { name: string; value: string; options?: Record<string, unknown> };
 
 function makeCookieMethods(cookieStore: Awaited<ReturnType<typeof cookies>>): CookieMethodsServer {
   return {

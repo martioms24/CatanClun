@@ -21,6 +21,17 @@ export function ordinal(n: number): string {
   return `${n}è`;
 }
 
+// Maps player name → public icon path (icon1–icon7 in order of PLAYER_COLORS)
+export const PLAYER_ICONS: Record<string, string> = {
+  Martí: "/icon1.png",
+  Marcel: "/icon2.png",
+  Alejandro: "/icon3.png",
+  Nacho: "/icon4.png",
+  Eudald: "/icon5.png",
+  Iván: "/icon6.png",
+  Gaba: "/icon7.png",
+};
+
 export const PLAYER_COLORS: Record<string, string> = {
   Martí: "#E53E3E",
   Marcel: "#3182CE",

@@ -30,7 +30,7 @@ export function GameCard({ game }: GameCardProps) {
               <span className="font-cinzel text-sm font-semibold text-medieval-dark">
                 {winner.player.name}
               </span>
-              <MeepleIcon color={winner.player.color} size={18} />
+              <MeepleIcon color={winner.player.color} size={18} name={winner.player.name} />
             </div>
           )}
         </div>
@@ -45,7 +45,7 @@ export function GameCard({ game }: GameCardProps) {
                 {result.position === 1 ? "👑" : `${result.position}.`}
               </span>
               {result.player && (
-                <MeepleIcon color={result.player.color} size={14} />
+                <MeepleIcon color={result.player.color} size={14} name={result.player.name} />
               )}
               <span className="font-garamond text-medieval-dark text-sm flex-1">
                 {result.player?.name}

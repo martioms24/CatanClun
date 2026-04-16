@@ -63,3 +63,52 @@ export type NewGamePayload = {
   results: { player_id: string; score: number; position: number }[];
   extension_ids: string[];
 };
+
+export type PlanStatus = "pending" | "done" | "discarded";
+
+export type Plan = {
+  id: string;
+  title: string;
+  status: PlanStatus;
+  created_at: string;
+  resolved_at: string | null;
+};
+
+// Quedadas (meetups)
+export type QuedadaStatus = "pending" | "confirmed" | "rejected";
+
+export type Quedada = {
+  id: string;
+  date: string;
+  description: string | null;
+  created_by: string;
+  status: QuedadaStatus;
+  created_at: string;
+  // joined
+  creator?: Player;
+  participants?: QuedadaParticipant[];
+};
+
+export type QuedadaParticipant = {
+  id: string;
+  quedada_id: string;
+  player_id: string;
+  status: QuedadaStatus;
+  responded_at: string | null;
+  // joined
+  player?: Player;
+};
+
+// Profile stats
+export type QuedadaStats = {
+  total_attended: number;
+  total_invited: number;
+  upcoming: number;
+  frequent_partners: { player: Player; count: number }[];
+};
+
+export type AwardWin = {
+  year: number;
+  category: string;
+  emoji: string;
+};

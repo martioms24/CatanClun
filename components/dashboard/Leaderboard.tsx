@@ -40,7 +40,7 @@ export function Leaderboard({ stats, sortBy = "wins" }: LeaderboardProps) {
             <span className="w-7 text-center text-lg shrink-0">
               {positionBadge(i)}
             </span>
-            <MeepleIcon color={s.player.color} size={26} />
+            <MeepleIcon color={s.player.color} size={26} name={s.player.name} />
             <span className="font-cinzel font-semibold text-medieval-dark flex-1 group-hover:text-medieval-gold transition-colors">
               {s.player.name}
             </span>
@@ -135,7 +135,7 @@ export function StatsCards({ stats }: { stats: PlayerStats[] }) {
           </p>
           {c.player && (
             <div className="flex items-center gap-1.5 mb-0.5">
-              <MeepleIcon color={c.player.player.color} size={14} />
+              <MeepleIcon color={c.player.player.color} size={14} name={c.player.player.name} />
               <span className="font-cinzel font-bold text-medieval-dark text-sm">
                 {c.player.player.name}
               </span>

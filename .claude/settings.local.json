@@ -19,7 +19,29 @@
       "Bash(vercel --version)",
       "Bash(vercel whoami *)",
       "Bash(vercel --prod --yes -e NEXT_PUBLIC_SUPABASE_URL=https://ionaxkoyvmtwixhuooxm.supabase.co -e NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlvbmF4a295dm10d2l4aHVvb3htIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyODY4NzAsImV4cCI6MjA5MTg2Mjg3MH0.xVvhKIRhGuGLJ3Uc_SzpdEa5x1kE1va4oDon4vxI5zY -e SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlvbmF4a295dm10d2l4aHVvb3htIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NjI4Njg3MCwiZXhwIjoyMDkxODYyODcwfQ.YmATkm2c8YyOwBTajfYX_9JeFqTdMy86BI_5Q-unUBw)",
-      "Bash(vercel --prod --yes --name catan-clun -e NEXT_PUBLIC_SUPABASE_URL=https://ionaxkoyvmtwixhuooxm.supabase.co -e NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlvbmF4a295dm10d2l4aHVvb3htIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyODY4NzAsImV4cCI6MjA5MTg2Mjg3MH0.xVvhKIRhGuGLJ3Uc_SzpdEa5x1kE1va4oDon4vxI5zY -e SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlvbmF4a295dm10d2l4aHVvb3htIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NjI4Njg3MCwiZXhwIjoyMDkxODYyODcwfQ.YmATkm2c8YyOwBTajfYX_9JeFqTdMy86BI_5Q-unUBw)"
+      "Bash(vercel --prod --yes --name catan-clun -e NEXT_PUBLIC_SUPABASE_URL=https://ionaxkoyvmtwixhuooxm.supabase.co -e NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlvbmF4a295dm10d2l4aHVvb3htIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYyODY4NzAsImV4cCI6MjA5MTg2Mjg3MH0.xVvhKIRhGuGLJ3Uc_SzpdEa5x1kE1va4oDon4vxI5zY -e SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlvbmF4a295dm10d2l4aHVvb3htIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NjI4Njg3MCwiZXhwIjoyMDkxODYyODcwfQ.YmATkm2c8YyOwBTajfYX_9JeFqTdMy86BI_5Q-unUBw)",
+      "Bash(curl -s http://localhost:3000)",
+      "Bash(vercel logs *)",
+      "Bash(cp assets/logo.png public/logo.png)",
+      "Bash(cp assets/icon1.png public/icon1.png)",
+      "Bash(cp assets/icon2.png public/icon2.png)",
+      "Bash(cp assets/icon3.png public/icon3.png)",
+      "Bash(cp assets/icon4.png public/icon4.png)",
+      "Bash(vercel --prod --yes)",
+      "Bash(vercel ls *)",
+      "Bash(curl -sI https://catan-clun.vercel.app/)",
+      "Bash(vercel env *)",
+      "Bash(ls \"/c/Users/marti/Desktop/Martí/CatanClun/\"*.ts \"/c/Users/marti/Desktop/Martí/CatanClun/\"*.mjs \"/c/Users/marti/Desktop/Martí/CatanClun/\"*.js)",
+      "Bash(curl -sI https://catan-clun.vercel.app/plans)",
+      "Bash(npx web-push *)",
+      "Bash(npx tsc *)",
+      "Bash(ls \"/c/Users/marti/Desktop/Martí/CatanClun/public/favicon\"* \"/c/Users/marti/Desktop/Martí/CatanClun/app/favicon\"*)",
+      "Bash(curl -sI https://catan-clun.vercel.app/favicon.ico)",
+      "Bash(curl -sI https://catan-clun.vercel.app/favicon-96x96.png)",
+      "Bash(curl -s https://catan-clun.vercel.app/manifest.json)",
+      "Bash(curl -sL https://catan-clun.vercel.app/manifest.json)",
+      "Bash(curl -sI https://catan-clun.vercel.app/sw.js)",
+      "Bash(npx next *)"
     ]
   }
 }

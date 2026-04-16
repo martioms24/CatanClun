@@ -48,7 +48,7 @@ export async function addPlan(title: string) {
     tag: "plans",
   });
 
-  revalidatePath("/plans");
+  revalidatePath("/plans", "layout");
   return { error: null };
 }
 
@@ -60,7 +60,7 @@ export async function updatePlanStatus(id: string, status: PlanStatus) {
     .eq("id", id);
   if (error) return { error: error.message };
 
-  revalidatePath("/plans");
+  revalidatePath("/plans", "layout");
   return { error: null };
 }
 
@@ -69,6 +69,6 @@ export async function deletePlan(id: string) {
   const { error } = await supabase.from("plans").delete().eq("id", id);
   if (error) return { error: error.message };
 
-  revalidatePath("/plans");
+  revalidatePath("/plans", "layout");
   return { error: null };
 }

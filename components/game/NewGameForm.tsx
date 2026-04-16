@@ -210,7 +210,7 @@ export function NewGameForm({
                   <Check size={14} />
                 </button>
 
-                <MeepleIcon color={player.color} size={24} />
+                <MeepleIcon color={player.color} size={24} name={player.name} />
                 <span className="font-cinzel font-semibold text-medieval-dark flex-1 text-sm">
                   {player.name}
                 </span>

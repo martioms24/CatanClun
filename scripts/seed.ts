@@ -48,7 +48,7 @@ const EXTENSIONS = [
 ];
 
 async function seed() {
-  console.log("🏰 Seeding Catán Clune database...\n");
+  console.log("🏰 Seeding Catan Clun database...\n");
 
   // Players
   console.log("👥 Inserting players...");

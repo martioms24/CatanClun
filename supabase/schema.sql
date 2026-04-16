@@ -1,5 +1,5 @@
 -- ============================================================
--- Catán Clune — Carcassonne Score Tracker
+-- Catan Clun — Carcassonne Score Tracker
 -- Supabase / PostgreSQL Schema
 -- ============================================================
 
