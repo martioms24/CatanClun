@@ -42,8 +42,8 @@ export function GamblingBoard({
 
   return (
     <div>
-      {/* Balance + create */}
-      <div className="flex items-center justify-between gap-3 mb-5 flex-wrap">
+      {/* Create bet */}
+      <div className="mb-5">
         {!showForm ? (
           <Button
             variant="primary"
@@ -54,22 +54,7 @@ export function GamblingBoard({
             Crear aposta
           </Button>
         ) : (
-          <div className="w-full">
-            <CreateBetForm onClose={() => setShowForm(false)} />
-          </div>
-        )}
-        {!showForm && (
-          <div className="flex items-center gap-2 bg-medieval-gold/10 border-2 border-medieval-gold rounded-medieval px-4 py-2">
-            <span className="font-cinzel text-medieval-dark text-sm">
-              El teu saldo:
-            </span>
-            <span className="font-cinzel text-medieval-gold font-bold text-lg">
-              {currentBalance}
-            </span>
-            <span className="font-garamond text-medieval-stone text-xs">
-              pts
-            </span>
-          </div>
+          <CreateBetForm onClose={() => setShowForm(false)} />
         )}
       </div>
 

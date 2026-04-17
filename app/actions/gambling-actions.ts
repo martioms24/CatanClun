@@ -88,10 +88,37 @@ export async function getPlayerPointsAll(): Promise<PlayerPoints[]> {
     .select("player_id, quedadas(date, points)")
     .eq("status", "confirmed");
 
-  // Wagers and payouts per player
+  // Wagers and payouts per player (manual bets)
   const { data: wagers } = await supabase
     .from("bet_wagers")
     .select("player_id, amount, payout");
+
+  // Slots wagers and payouts
+  let slotsData: { player_id: string; wager: number; payout: number }[] = [];
+  try {
+    const { data } = await supabase
+      .from("slots_games")
+      .select("player_id, wager, payout");
+    slotsData = (data ?? []) as typeof slotsData;
+  } catch { /* table may not exist */ }
+
+  // Mines wagers and payouts
+  let minesData: { player_id: string; wager: number; payout: number }[] = [];
+  try {
+    const { data } = await supabase
+      .from("mines_games")
+      .select("player_id, wager, payout");
+    minesData = (data ?? []) as typeof minesData;
+  } catch { /* table may not exist */ }
+
+  // Sports bets wagers and payouts
+  let sportsBetsData: { player_id: string; amount: number; payout: number }[] = [];
+  try {
+    const { data } = await supabase
+      .from("sports_bets")
+      .select("player_id, amount, payout");
+    sportsBetsData = (data ?? []) as typeof sportsBetsData;
+  } catch { /* table may not exist */ }
 
   // Redemptions per player
   const { data: redemptions } = await supabase
@@ -159,10 +186,28 @@ export async function getPlayerPointsAll(): Promise<PlayerPoints[]> {
 
     const earned = POINTS_STARTING_BONUS + gamePoints + quedadaPoints + cimsPoints + playerPlanPoints;
 
-    // Gambling
+    // Manual bets
     const playerWagers = wagers?.filter((w) => w.player_id === player.id) ?? [];
-    const wagered = playerWagers.reduce((sum, w) => sum + w.amount, 0);
-    const won = playerWagers.reduce((sum, w) => sum + w.payout, 0);
+    const betWagered = playerWagers.reduce((sum, w) => sum + w.amount, 0);
+    const betWon = playerWagers.reduce((sum, w) => sum + w.payout, 0);
+
+    // Slots
+    const playerSlots = slotsData.filter((s) => s.player_id === player.id);
+    const slotsWagered = playerSlots.reduce((sum, s) => sum + s.wager, 0);
+    const slotsWon = playerSlots.reduce((sum, s) => sum + s.payout, 0);
+
+    // Mines
+    const playerMines = minesData.filter((m) => m.player_id === player.id);
+    const minesWagered = playerMines.reduce((sum, m) => sum + m.wager, 0);
+    const minesWon = playerMines.reduce((sum, m) => sum + m.payout, 0);
+
+    // Sports bets
+    const playerSports = sportsBetsData.filter((s) => s.player_id === player.id);
+    const sportsWagered = playerSports.reduce((sum, s) => sum + s.amount, 0);
+    const sportsWon = playerSports.reduce((sum, s) => sum + s.payout, 0);
+
+    const wagered = betWagered + slotsWagered + minesWagered + sportsWagered;
+    const won = betWon + slotsWon + minesWon + sportsWon;
 
     // Redemptions
     const playerRedemptions = redemptions?.filter((r) => r.redeemed_by === player.id) ?? [];

@@ -215,3 +215,112 @@ export type PeakCompletion = {
   // joined
   players?: Player[];
 };
+
+// ── Sports betting ─────────────────────────────────────────
+export type SportsMatch = {
+  id: string;
+  api_match_id: string;
+  home_team: string;
+  away_team: string;
+  competition: string;
+  kickoff_at: string;
+  status: "upcoming" | "live" | "finished" | "cancelled";
+  home_score: number | null;
+  away_score: number | null;
+  created_at: string;
+  updated_at: string;
+  // joined
+  odds?: SportsOdds[];
+  bets?: SportsBet[];
+};
+
+export type SportsOdds = {
+  id: string;
+  match_id: string;
+  market: "h2h" | "correct_score";
+  outcome_label: string;
+  odds_decimal: number;
+  updated_at: string;
+};
+
+export type SportsBet = {
+  id: string;
+  match_id: string;
+  player_id: string;
+  market: "h2h" | "correct_score";
+  outcome_label: string;
+  amount: number;
+  odds_at_bet: number;
+  payout: number;
+  status: "pending" | "won" | "lost" | "cancelled";
+  created_at: string;
+  // joined
+  player?: Player;
+};
+
+// ── Slots ──────────────────────────────────────────────────
+export type SlotsGame = {
+  id: string;
+  player_id: string;
+  wager: number;
+  payout: number;
+  reels: number[][]; // 5 reels × 3 rows
+  winning_lines: WinningLine[] | null;
+  is_free_spin: boolean;
+  session_id: string | null;
+  created_at: string;
+};
+
+export type WinningLine = {
+  line: number;
+  symbols: number[];
+  payout: number;
+};
+
+export type SlotsSession = {
+  id: string;
+  player_id: string;
+  free_spins_remaining: number;
+  expanding_symbol: number;
+  base_wager: number;
+  created_at: string;
+};
+
+export type SlotSpinResult = {
+  reels: number[][];         // 5×3 grid
+  winningLines: WinningLine[];
+  totalPayout: number;
+  scatterCount: number;
+  freeSpinsAwarded: number;
+  expandingSymbol: number | null;
+  freeSpinsRemaining: number;
+  isFreeSpin: boolean;
+  gameId: string;
+};
+
+// ── Mines ──────────────────────────────────────────────────
+export type MinesGame = {
+  id: string;
+  player_id: string;
+  wager: number;
+  num_mines: number;
+  mine_positions: number[];  // hidden from client until game ends
+  revealed: number[];
+  payout: number;
+  multiplier: number;
+  status: "active" | "cashed_out" | "exploded";
+  server_seed: string;
+  created_at: string;
+};
+
+export type MinesGameState = {
+  id: string;
+  wager: number;
+  num_mines: number;
+  revealed: number[];
+  multiplier: number;
+  nextMultiplier: number;
+  status: "active" | "cashed_out" | "exploded";
+  payout: number;
+  minePositions?: number[];  // only revealed after game ends
+};
