@@ -21,7 +21,7 @@ export default async function QuedadesPage() {
         Quedades
       </h1>
       <p className="page-subtitle">
-        Organitza quedades amb la colla i confirma la teva assistència.
+        Registra les quedades amb la colla i guanya punts!
       </p>
       <QuedadesBoard
         initialQuedadas={quedadas}

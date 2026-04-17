@@ -46,7 +46,25 @@
       "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3099/gambling)",
       "Bash(curl -s http://localhost:3099/gambling)",
       "Bash(curl -s -L http://localhost:3099/gambling)",
-      "Bash(taskkill //F //IM \"node.exe\")"
+      "Bash(taskkill //F //IM \"node.exe\")",
+      "Bash(curl -s \"https://100cims.feec.cat/assets/index-DimCiuMx.js\" -o /tmp/100cims_app.js)",
+      "Bash(curl -s \"https://www.feec.cat/wp-content/cron-scripts/ascensos_cims.txt\" -o /tmp/ascensos_cims.txt)",
+      "Bash(curl -s \"https://100cims.feec.cat/assets/100%20cims%20FEEC_1763477476773-BEyPNcq6.js\" -o /tmp/100cims_data.js)",
+      "Bash(grep -oE '.{0,100}essencial.{0,100}' /tmp/100cims_app.js)",
+      "Bash(grep -oE '.{0,50}\\(latitude|longitude|lat_|lng_|coordin\\).{0,50}' /tmp/100cims_app.js)",
+      "Bash(grep -oE '.{0,80}\\(lat|lng|coordinates|position|LatLng|latlng\\).{0,80}' /tmp/100cims_app.js)",
+      "Bash(grep -oE '.{0,100}\\(supabase|firebase|apiUrl|baseUrl|apiKey|anon\\).{0,100}' /tmp/100cims_app.js)",
+      "Bash(python3 -c ' *)",
+      "Bash(curl -s \"https://www.feec.cat/activitats/100-cims/cim/el-tossal-gros/\" -o /tmp/peak_sample.html)",
+      "Bash(curl -s \"https://www.feec.cat/activitats/100-cims/cim/puigcabrer/\" -o /tmp/peak_sample2.html)",
+      "Bash(curl -s \"https://www.feec.cat/wp-json/wp/v2/100-cims?per_page=5\" -o /tmp/wp_api_cims.json)",
+      "Bash(curl -s -X POST \"https://www.feec.cat/wp-admin/admin-ajax.php\" -d \"action=load_100cims&cat=&term=&text=&cims_query=cims_essencials&current_page=1\" -o /tmp/ajax_essencials.html)",
+      "Bash(grep -oE '\"https?://[^\"]{10,100}\"' /tmp/100cims_app.js)",
+      "Bash(curl -s \"https://100cims.feec.cat/assets/EssentialsPage-BUTWNnBp.js\" -o /tmp/essentials_page.js)",
+      "Bash(curl -s \"https://100cims.feec.cat/api/peaks\" -o /tmp/peaks_api.json)",
+      "Bash(curl -s \"https://100cims.feec.cat/api/peaks?filter=essential&all=true\" -o /tmp/peaks_essential.json)",
+      "Bash(python3)",
+      "Bash(xargs grep *)"
     ]
   }
 }

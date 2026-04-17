@@ -1,11 +1,12 @@
 import { getPlans } from "@/app/actions/plan-actions";
+import { getPlayers } from "@/app/actions/game-actions";
 import { PlansBoard } from "@/components/plans/PlansBoard";
 import { Scroll } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
 export default async function PlansLlistaPage() {
-  const plans = await getPlans();
+  const [plans, players] = await Promise.all([getPlans(), getPlayers()]);
 
   return (
     <div className="page-container max-w-2xl">
@@ -16,7 +17,7 @@ export default async function PlansLlistaPage() {
       <p className="page-subtitle">
         Aventures a emprendre amb la colla — completeu-les o descarteu-les.
       </p>
-      <PlansBoard initialPlans={plans} />
+      <PlansBoard initialPlans={plans} players={players} />
     </div>
   );
 }

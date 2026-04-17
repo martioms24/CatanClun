@@ -2,8 +2,9 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import { sendPushToPlayer, sendPushToAll } from "@/lib/push/send";
-import type { Quedada } from "@/types";
+import { sendPushToAll } from "@/lib/push/send";
+import { QUEDADA_TYPES } from "@/lib/quedada-types";
+import type { Quedada, QuedadaType } from "@/types";
 
 async function getCurrentPlayerId(
   supabase: Awaited<ReturnType<typeof createClient>>
@@ -44,17 +45,22 @@ export async function getQuedadas(): Promise<Quedada[]> {
     )
     .order("date", { ascending: false });
 
-  if (error) throw new Error(error.message);
+  if (error) {
+    console.error("[quedadas] getQuedadas error:", error.message);
+    return [];
+  }
   return (data as Quedada[]) ?? [];
 }
 
 export async function createQuedada(
   date: string,
   participantIds: string[],
+  type: QuedadaType,
+  points: number,
   description?: string
 ) {
-  if (participantIds.length < 2)
-    return { error: "Cal seleccionar almenys 2 participants." };
+  if (participantIds.length < 1)
+    return { error: "Cal seleccionar almenys 1 participant." };
 
   const supabase = await createClient();
   const creatorId = await getCurrentPlayerId(supabase);
@@ -64,25 +70,31 @@ export async function createQuedada(
     participantIds = [creatorId, ...participantIds];
   }
 
-  // Create the quedada
+  // Resolve points from type if not custom
+  const typeInfo = QUEDADA_TYPES.find((t) => t.type === type);
+  const finalPoints = type === "custom" ? points : (typeInfo?.points ?? 4);
+
   const { data: quedada, error } = await supabase
     .from("quedadas")
     .insert({
       date,
       description: description?.trim() || null,
       created_by: creatorId,
+      status: "confirmed",
+      type,
+      points: finalPoints,
     })
     .select("id")
     .single();
 
   if (error) return { error: error.message };
 
-  // Insert participants — creator is auto-confirmed
+  // Insert participants (all confirmed — no approval)
   const participants = participantIds.map((pid) => ({
     quedada_id: quedada.id,
     player_id: pid,
-    status: pid === creatorId ? "confirmed" : "pending",
-    responded_at: pid === creatorId ? new Date().toISOString() : null,
+    status: "confirmed",
+    responded_at: new Date().toISOString(),
   }));
 
   const { error: pError } = await supabase
@@ -91,79 +103,87 @@ export async function createQuedada(
 
   if (pError) return { error: pError.message };
 
-  // Send push notifications to non-creator participants
+  // Push notification
   const creatorName = await getCurrentPlayerName(supabase);
   const dateStr = new Date(date).toLocaleDateString("ca-ES", {
     day: "numeric",
     month: "long",
   });
+  const typeLabel = typeInfo?.emoji ?? "";
 
-  for (const pid of participantIds) {
-    if (pid === creatorId) continue;
-    await sendPushToPlayer(pid, {
-      title: "Nova quedada!",
-      body: `${creatorName ?? "Algú"} proposa quedar el ${dateStr}. Confirma la teva assistència!`,
-      url: "/plans/quedades",
-      tag: `quedada-${quedada.id}`,
-    });
-  }
-
-  revalidatePath("/plans");
-  return { error: null, id: quedada.id };
-}
-
-export async function respondToQuedada(
-  quedadaId: string,
-  response: "confirmed" | "rejected"
-) {
-  const supabase = await createClient();
-  const playerId = await getCurrentPlayerId(supabase);
-  if (!playerId) return { error: "No s'ha pogut identificar l'usuari." };
-
-  const { error } = await supabase
-    .from("quedada_participants")
-    .update({
-      status: response,
-      responded_at: new Date().toISOString(),
-    })
-    .eq("quedada_id", quedadaId)
-    .eq("player_id", playerId);
-
-  if (error) return { error: error.message };
-
-  // Notify all about the response
-  const playerName = await getCurrentPlayerName(supabase);
-  const statusText = response === "confirmed" ? "ha confirmat" : "ha rebutjat";
   await sendPushToAll({
-    title: "Resposta a quedada",
-    body: `${playerName ?? "Algú"} ${statusText} la quedada.`,
+    title: `${typeLabel} Nova quedada registrada!`,
+    body: `${creatorName ?? "Algú"} ha registrat una quedada el ${dateStr}`,
     url: "/plans/quedades",
-    tag: `quedada-${quedadaId}`,
+    tag: `quedada-${quedada.id}`,
   });
 
   revalidatePath("/plans");
-  return { error: null };
+  revalidatePath("/forum");
+  revalidatePath("/gambling");
+  return { error: null, id: quedada.id };
+}
+
+/** Auto-register a quedada from a game or cim completion (no push, internal use) */
+export async function createAutoQuedada(
+  date: string,
+  participantIds: string[],
+  creatorId: string,
+  description?: string
+) {
+  const supabase = await createClient();
+
+  const { data: quedada, error } = await supabase
+    .from("quedadas")
+    .insert({
+      date,
+      description: description || null,
+      created_by: creatorId,
+      status: "confirmed",
+      type: "default",
+      points: 4,
+    })
+    .select("id")
+    .single();
+
+  if (error) {
+    console.error("[quedada] auto-create error:", error.message);
+    return;
+  }
+
+  const participants = participantIds.map((pid) => ({
+    quedada_id: quedada.id,
+    player_id: pid,
+    status: "confirmed",
+    responded_at: new Date().toISOString(),
+  }));
+
+  await supabase.from("quedada_participants").insert(participants);
 }
 
 export async function updateQuedada(
   id: string,
   date: string,
+  type: QuedadaType,
+  points: number,
   description: string | undefined,
   participantIds: string[]
 ) {
-  if (participantIds.length < 2)
-    return { error: "Cal seleccionar almenys 2 participants." };
+  if (participantIds.length < 1)
+    return { error: "Cal almenys 1 participant." };
 
   const supabase = await createClient();
-  const creatorId = await getCurrentPlayerId(supabase);
-  if (!creatorId) return { error: "No s'ha pogut identificar l'usuari." };
 
-  // Update date + description
+  const typeInfo = QUEDADA_TYPES.find((t) => t.type === type);
+  const finalPoints = type === "custom" ? points : (typeInfo?.points ?? 4);
+
   const { error: updateErr } = await supabase
     .from("quedadas")
     .update({
       date,
       description: description?.trim() || null,
+      type,
+      points: finalPoints,
     })
     .eq("id", id);
 
@@ -179,41 +199,22 @@ export async function updateQuedada(
     currentParticipants?.map((p) => p.player_id) ?? []
   );
 
-  // Add new participants (those in participantIds but not in currentIds)
+  // Add new participants
   const newIds = participantIds.filter((pid) => !currentIds.has(pid));
   if (newIds.length > 0) {
-    const newParticipants = newIds.map((pid) => ({
-      quedada_id: id,
-      player_id: pid,
-      status: "pending" as const,
-    }));
-
-    const { error: insertErr } = await supabase
-      .from("quedada_participants")
-      .insert(newParticipants);
-
-    if (insertErr) return { error: insertErr.message };
-
-    // Send push to newly added participants
-    const creatorName = await getCurrentPlayerName(supabase);
-    const dateStr = new Date(date).toLocaleDateString("ca-ES", {
-      day: "numeric",
-      month: "long",
-    });
-
-    for (const pid of newIds) {
-      await sendPushToPlayer(pid, {
-        title: "T'han afegit a una quedada!",
-        body: `${creatorName ?? "Algú"} t'ha afegit a la quedada del ${dateStr}. Confirma!`,
-        url: "/plans/quedades",
-        tag: `quedada-${id}`,
-      });
-    }
+    await supabase.from("quedada_participants").insert(
+      newIds.map((pid) => ({
+        quedada_id: id,
+        player_id: pid,
+        status: "confirmed",
+        responded_at: new Date().toISOString(),
+      }))
+    );
   }
 
-  // Remove participants no longer in the list (but not the creator)
+  // Remove participants no longer in the list
   const removedIds = [...currentIds].filter(
-    (pid) => !participantIds.includes(pid) && pid !== creatorId
+    (pid) => !participantIds.includes(pid)
   );
   if (removedIds.length > 0) {
     await supabase
@@ -221,31 +222,11 @@ export async function updateQuedada(
       .delete()
       .eq("quedada_id", id)
       .in("player_id", removedIds);
-
-    // Recalculate quedada status after removal
-    // Reset to pending if it was rejected due to a now-removed participant
-    const { data: remaining } = await supabase
-      .from("quedada_participants")
-      .select("status")
-      .eq("quedada_id", id);
-
-    if (remaining) {
-      const hasRejected = remaining.some((p) => p.status === "rejected");
-      const allConfirmed = remaining.every((p) => p.status === "confirmed");
-      const newStatus = hasRejected
-        ? "rejected"
-        : allConfirmed
-        ? "confirmed"
-        : "pending";
-      await supabase
-        .from("quedadas")
-        .update({ status: newStatus })
-        .eq("id", id);
-    }
   }
 
   revalidatePath("/plans");
   revalidatePath("/forum");
+  revalidatePath("/gambling");
   return { error: null };
 }
 
@@ -255,33 +236,6 @@ export async function deleteQuedada(id: string) {
   if (error) return { error: error.message };
 
   revalidatePath("/plans");
+  revalidatePath("/gambling");
   return { error: null };
-}
-
-export async function getPendingQuedadasForPlayer(): Promise<
-  { quedadaId: string; date: string; creatorName: string }[]
-> {
-  const supabase = await createClient();
-  const playerId = await getCurrentPlayerId(supabase);
-  if (!playerId) return [];
-
-  const { data, error } = await supabase
-    .from("quedada_participants")
-    .select("quedada_id, quedadas(date, creator:players!quedadas_created_by_fkey(name))")
-    .eq("player_id", playerId)
-    .eq("status", "pending");
-
-  if (error || !data) return [];
-
-  return data.map((d) => {
-    const q = d.quedadas as unknown as {
-      date: string;
-      creator: { name: string };
-    };
-    return {
-      quedadaId: d.quedada_id,
-      date: q.date,
-      creatorName: q.creator?.name ?? "Desconegut",
-    };
-  });
 }

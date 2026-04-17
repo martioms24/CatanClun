@@ -40,26 +40,21 @@ export async function getRecentActivity(
   // Recent quedadas
   const { data: quedadas } = await supabase
     .from("quedadas")
-    .select("id, date, description, status, creator:players!quedadas_created_by_fkey(name)")
+    .select("id, date, description, type, points, creator:players!quedadas_created_by_fkey(name)")
     .order("date", { ascending: false })
     .limit(limit);
 
   if (quedadas) {
     for (const q of quedadas) {
       const creator = q.creator as unknown as { name: string };
-      const statusLabel =
-        q.status === "confirmed"
-          ? "confirmada"
-          : q.status === "rejected"
-          ? "rebutjada"
-          : "pendent";
       items.push({
         type: "quedada",
         date: q.date,
-        title: `Quedada ${statusLabel}`,
+        title: `Quedada`,
         description:
-          `Proposada per ${creator?.name ?? "Desconegut"}` +
-          (q.description ? ` — ${q.description}` : ""),
+          `Per ${creator?.name ?? "Desconegut"}` +
+          (q.description ? ` — ${q.description}` : "") +
+          ` (${q.points ?? 4} pts)`,
         link: "/plans/quedades",
       });
     }

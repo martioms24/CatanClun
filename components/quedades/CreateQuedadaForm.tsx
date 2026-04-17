@@ -5,9 +5,10 @@ import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { MeepleIcon } from "@/components/ui/MeepleIcon";
 import { createQuedada } from "@/app/actions/quedada-actions";
+import { QUEDADA_TYPES } from "@/lib/quedada-types";
 import { cn } from "@/lib/utils";
-import type { Player } from "@/types";
-import { Check, X } from "lucide-react";
+import type { Player, QuedadaType } from "@/types";
+import { Check, X, Coins } from "lucide-react";
 
 export function CreateQuedadaForm({
   players,
@@ -20,11 +21,15 @@ export function CreateQuedadaForm({
 }) {
   const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
   const [description, setDescription] = useState("");
+  const [quedadaType, setQuedadaType] = useState<QuedadaType>("default");
+  const [customPoints, setCustomPoints] = useState(4);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(
     new Set(currentPlayerId ? [currentPlayerId] : [])
   );
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+
+  const typeInfo = QUEDADA_TYPES.find((t) => t.type === quedadaType)!;
 
   function togglePlayer(id: string) {
     setSelectedIds((prev) => {
@@ -39,8 +44,8 @@ export function CreateQuedadaForm({
     e.preventDefault();
     setError(null);
 
-    if (selectedIds.size < 2) {
-      setError("Cal seleccionar almenys 2 participants.");
+    if (selectedIds.size < 1) {
+      setError("Cal seleccionar almenys 1 participant.");
       return;
     }
 
@@ -48,6 +53,8 @@ export function CreateQuedadaForm({
       const result = await createQuedada(
         date,
         Array.from(selectedIds),
+        quedadaType,
+        quedadaType === "custom" ? customPoints : typeInfo.points,
         description || undefined
       );
       if (result.error) {
@@ -62,8 +69,59 @@ export function CreateQuedadaForm({
     <Card>
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <label className="font-cinzel text-medieval-dark text-sm">
-          Nova quedada
+          Registrar quedada
         </label>
+
+        {/* Type selector */}
+        <div>
+          <label className="font-garamond text-medieval-stone text-sm mb-1.5 block">
+            Tipus d&apos;activitat
+          </label>
+          <div className="flex flex-wrap gap-2">
+            {QUEDADA_TYPES.map((t) => (
+              <button
+                key={t.type}
+                type="button"
+                onClick={() => setQuedadaType(t.type)}
+                className={cn(
+                  "flex items-center gap-1.5 px-3 py-2 rounded-medieval border-2 text-sm font-garamond transition-all",
+                  quedadaType === t.type
+                    ? "bg-medieval-gold/20 border-medieval-gold text-medieval-dark font-semibold"
+                    : "bg-parchment-light border-medieval-brown/20 text-medieval-stone hover:border-medieval-brown/40"
+                )}
+              >
+                <span>{t.emoji}</span>
+                {t.label}
+                {t.type !== "custom" && (
+                  <span className="text-xs text-medieval-gold font-cinzel ml-1">
+                    {t.points}pts
+                  </span>
+                )}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Custom points input */}
+        {quedadaType === "custom" && (
+          <div>
+            <label className="font-garamond text-medieval-stone text-sm mb-1 block">
+              Punts per participant
+            </label>
+            <div className="flex items-center gap-2">
+              <Coins size={14} className="text-medieval-gold" />
+              <input
+                type="number"
+                value={customPoints}
+                onChange={(e) => setCustomPoints(Math.max(0, Number(e.target.value)))}
+                min={0}
+                max={100}
+                className="w-20 px-3 py-2 rounded-medieval border-2 border-medieval-brown/30 bg-parchment-light font-garamond text-medieval-dark focus:outline-none focus:border-medieval-gold transition-colors"
+              />
+              <span className="font-garamond text-medieval-stone text-sm">pts</span>
+            </div>
+          </div>
+        )}
 
         {/* Date */}
         <div>
@@ -87,7 +145,7 @@ export function CreateQuedadaForm({
             type="text"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            placeholder="Què fareu?"
+            placeholder={quedadaType === "custom" ? "Nom de l'activitat..." : "Què heu fet?"}
             maxLength={200}
             className="w-full px-3 py-2 rounded-medieval border-2 border-medieval-brown/30 bg-parchment-light font-garamond text-medieval-dark focus:outline-none focus:border-medieval-gold transition-colors"
           />
@@ -96,7 +154,7 @@ export function CreateQuedadaForm({
         {/* Player selection */}
         <div>
           <label className="font-garamond text-medieval-stone text-sm mb-2 block">
-            Participants ({selectedIds.size} seleccionats)
+            Participants ({selectedIds.size})
           </label>
           <div className="flex flex-wrap gap-2">
             {players.map((player) => {
@@ -139,10 +197,10 @@ export function CreateQuedadaForm({
             variant="primary"
             size="sm"
             loading={isPending}
-            disabled={selectedIds.size < 2}
+            disabled={selectedIds.size < 1}
           >
             <Check size={14} />
-            Proposar
+            Registrar
           </Button>
           <Button
             type="button"

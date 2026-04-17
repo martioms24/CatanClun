@@ -1,7 +1,5 @@
 import { Navbar } from "@/components/layout/Navbar";
 import { getCurrentPlayer } from "@/app/actions/auth-actions";
-import { getPendingQuedadasForPlayer } from "@/app/actions/quedada-actions";
-import { ConfirmationBanner } from "@/components/quedades/ConfirmationBanner";
 
 export default async function AppLayout({
   children,
@@ -9,12 +7,10 @@ export default async function AppLayout({
   children: React.ReactNode;
 }) {
   const player = await getCurrentPlayer();
-  const pendingQuedadas = await getPendingQuedadasForPlayer();
 
   return (
     <div className="min-h-dvh flex flex-col">
       <Navbar playerName={player?.name} playerId={player?.id} />
-      <ConfirmationBanner pending={pendingQuedadas} />
       <main className="flex-1">{children}</main>
       <footer className="border-t-2 border-medieval-brown/20 py-3 text-center">
         <p className="font-garamond text-medieval-stone text-xs">

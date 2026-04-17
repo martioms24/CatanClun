@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { createAutoQuedada } from "@/app/actions/quedada-actions";
 import type { PeakCompletion } from "@/types";
 
 export async function getPeakCompletions(): Promise<PeakCompletion[]> {
@@ -62,7 +63,16 @@ export async function completePeak(
 
   if (playersError) return { error: playersError.message };
 
+  // Auto-register a quedada for the peak completion
+  await createAutoQuedada(
+    completedAt,
+    playerIds,
+    playerIds[0],
+    `Cim: ${peakName}`
+  );
+
   revalidatePath("/cims");
+  revalidatePath("/gambling");
   return { error: null };
 }
 

@@ -20,14 +20,17 @@ import {
   MapPin,
 } from "lucide-react";
 
-// Point calculation
+// Point calculation (base + altitude bonus, excludes the 4pt auto-quedada)
 function getPoints(peak: Peak): number {
   const base = peak.essential ? 8 : 6;
   let bonus = 0;
-  if (peak.altitude >= 3000) bonus = 15;
-  else if (peak.altitude >= 2500) bonus = 8;
-  else if (peak.altitude >= 2000) bonus = 6;
-  else if (peak.altitude >= 1750) bonus = 4;
+  if (peak.altitude >= 3000) bonus = 20;
+  else if (peak.altitude >= 2750) bonus = 14;
+  else if (peak.altitude >= 2500) bonus = 12;
+  else if (peak.altitude >= 2250) bonus = 10;
+  else if (peak.altitude >= 2000) bonus = 8;
+  else if (peak.altitude >= 1750) bonus = 6;
+  else if (peak.altitude >= 1500) bonus = 4;
   else if (peak.altitude >= 1000) bonus = 2;
   return base + bonus;
 }

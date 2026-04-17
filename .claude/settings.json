@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:the-odds-api.com)",
+      "WebFetch(domain:www.api-football.com)",
+      "WebFetch(domain:www.football-data.org)"
+    ]
+  }
+}

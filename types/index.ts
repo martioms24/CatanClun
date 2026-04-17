@@ -70,19 +70,32 @@ export type Plan = {
   id: string;
   title: string;
   status: PlanStatus;
+  points: number;
   created_at: string;
   resolved_at: string | null;
+  // joined
+  completions?: PlanCompletion[];
+};
+
+export type PlanCompletion = {
+  id: string;
+  plan_id: string;
+  player_id: string;
+  // joined
+  player?: Player;
 };
 
 // Quedadas (meetups)
-export type QuedadaStatus = "pending" | "confirmed" | "rejected";
+export type QuedadaType = "default" | "escalar" | "festa" | "platja" | "barbacoa" | "custom";
 
 export type Quedada = {
   id: string;
   date: string;
   description: string | null;
   created_by: string;
-  status: QuedadaStatus;
+  status: string;
+  type: QuedadaType;
+  points: number;
   created_at: string;
   // joined
   creator?: Player;
@@ -93,7 +106,7 @@ export type QuedadaParticipant = {
   id: string;
   quedada_id: string;
   player_id: string;
-  status: QuedadaStatus;
+  status: string;
   responded_at: string | null;
   // joined
   player?: Player;

@@ -7,9 +7,6 @@ import { PEAKS_100_CIMS } from "@/lib/peaks-100cims";
 import type { Bet, PlayerPoints, Player } from "@/types";
 
 // ── Point constants ──────────────────────────────────────────
-const POINTS_GAME_PLAYED = 5;
-const POINTS_GAME_WON = 20;
-const POINTS_QUEDADA_ATTENDED = 5;
 const POINTS_STARTING_BONUS = 100;
 
 // ── Helpers ──────────────────────────────────────────────────
@@ -44,16 +41,27 @@ async function getCurrentPlayerName(
   return data?.name ?? null;
 }
 
-// ── Cims point calculation ──────────────────────────────────
+// ── Game position scoring ───────────────────────────────────
+function getGamePositionPoints(position: number): number {
+  if (position === 1) return 8;
+  if (position === 2) return 5;
+  if (position === 3) return 3;
+  return 1;
+}
+
+// ── Cims point calculation (base + altitude, excludes auto-quedada) ──
 function getCimPoints(peakName: string): number {
   const peak = PEAKS_100_CIMS.find((p) => p.name === peakName);
   if (!peak) return 0;
   const base = peak.essential ? 8 : 6;
   let bonus = 0;
-  if (peak.altitude >= 3000) bonus = 15;
-  else if (peak.altitude >= 2500) bonus = 8;
-  else if (peak.altitude >= 2000) bonus = 6;
-  else if (peak.altitude >= 1750) bonus = 4;
+  if (peak.altitude >= 3000) bonus = 20;
+  else if (peak.altitude >= 2750) bonus = 14;
+  else if (peak.altitude >= 2500) bonus = 12;
+  else if (peak.altitude >= 2250) bonus = 10;
+  else if (peak.altitude >= 2000) bonus = 8;
+  else if (peak.altitude >= 1750) bonus = 6;
+  else if (peak.altitude >= 1500) bonus = 4;
   else if (peak.altitude >= 1000) bonus = 2;
   return base + bonus;
 }
@@ -69,15 +77,15 @@ export async function getPlayerPointsAll(): Promise<PlayerPoints[]> {
     .order("name");
   if (!players) return [];
 
-  // Games played & won per player
+  // Games: position-based scoring
   const { data: results } = await supabase
     .from("game_results")
     .select("player_id, position");
 
-  // Quedadas confirmed per player
+  // Quedadas: points come from the quedada row itself
   const { data: participations } = await supabase
     .from("quedada_participants")
-    .select("player_id, status, quedadas(date)")
+    .select("player_id, quedadas(date, points)")
     .eq("status", "confirmed");
 
   // Wagers and payouts per player
@@ -90,7 +98,7 @@ export async function getPlayerPointsAll(): Promise<PlayerPoints[]> {
     .from("redemptions")
     .select("redeemed_by, cost");
 
-  // Peak completions per player
+  // Peak completions per player (cim-specific points, not the auto-quedada)
   let cimsPlayerPoints: { player_id: string; peak_name: string }[] = [];
   try {
     const { data: compPlayers } = await supabase
@@ -104,30 +112,52 @@ export async function getPlayerPointsAll(): Promise<PlayerPoints[]> {
     // Table may not exist yet
   }
 
+  // Plan completions
+  let planPlayerPoints: { player_id: string; points: number }[] = [];
+  try {
+    const { data: planComps } = await supabase
+      .from("plan_completions")
+      .select("player_id, plan:plans(points)");
+    planPlayerPoints = (planComps ?? []).map((pc) => ({
+      player_id: pc.player_id,
+      points: (pc.plan as unknown as { points: number })?.points ?? 10,
+    }));
+  } catch {
+    // Table may not exist yet
+  }
+
   const today = new Date().toISOString().slice(0, 10);
 
   return players.map((player: Player) => {
-    // Earned from games
+    // Earned from game positions (1st=8, 2nd=5, 3rd=3, 4th+=1)
     const playerResults = results?.filter((r) => r.player_id === player.id) ?? [];
-    const gamesPlayed = playerResults.length;
-    const gamesWon = playerResults.filter((r) => r.position === 1).length;
-    const gamePoints = gamesPlayed * POINTS_GAME_PLAYED + gamesWon * POINTS_GAME_WON;
+    const gamePoints = playerResults.reduce(
+      (sum, r) => sum + getGamePositionPoints(r.position),
+      0
+    );
 
-    // Earned from quedadas (only past ones)
+    // Earned from quedadas (use the points field from each quedada)
     const playerQuedadas = participations?.filter((p) => {
       if (p.player_id !== player.id) return false;
-      const q = p.quedadas as unknown as { date: string };
+      const q = p.quedadas as unknown as { date: string; points: number };
       return q.date <= today;
     }) ?? [];
-    const quedadaPoints = playerQuedadas.length * POINTS_QUEDADA_ATTENDED;
+    const quedadaPoints = playerQuedadas.reduce((sum, p) => {
+      const q = p.quedadas as unknown as { points: number };
+      return sum + (q.points ?? 4);
+    }, 0);
 
-    // Earned from cims
+    // Earned from cims (base + altitude bonus, per unique peak)
     const playerCims = cimsPlayerPoints.filter((c) => c.player_id === player.id);
-    // Deduplicate by peak name (only count each peak once)
     const uniquePeaks = new Set(playerCims.map((c) => c.peak_name));
     const cimsPoints = [...uniquePeaks].reduce((sum, name) => sum + getCimPoints(name), 0);
 
-    const earned = POINTS_STARTING_BONUS + gamePoints + quedadaPoints + cimsPoints;
+    // Earned from completed plans
+    const playerPlanPoints = planPlayerPoints
+      .filter((p) => p.player_id === player.id)
+      .reduce((sum, p) => sum + p.points, 0);
+
+    const earned = POINTS_STARTING_BONUS + gamePoints + quedadaPoints + cimsPoints + playerPlanPoints;
 
     // Gambling
     const playerWagers = wagers?.filter((w) => w.player_id === player.id) ?? [];

@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { sendPushToAll } from "@/lib/push/send";
+import { createAutoQuedada } from "@/app/actions/quedada-actions";
 import type { NewGamePayload, Game, PlayerStats, Extension } from "@/types";
 
 // ─── Read helpers ────────────────────────────────────────────
@@ -145,8 +146,23 @@ export async function createGame(payload: NewGamePayload) {
     tag: "games",
   });
 
+  // Auto-register a quedada for the game
+  const playerIds = payload.results.map((r) => r.player_id);
+  const creatorPlayerId = user?.id
+    ? (await supabase.from("players").select("id").eq("user_id", user.id).single()).data?.id
+    : playerIds[0];
+  if (creatorPlayerId && playerIds.length > 0) {
+    await createAutoQuedada(
+      payload.played_at,
+      playerIds,
+      creatorPlayerId,
+      "Partida de Carcassonne"
+    );
+  }
+
   revalidatePath("/dashboard");
   revalidatePath("/games");
+  revalidatePath("/gambling");
   return { success: true, id: game.id };
 }
 

@@ -27,8 +27,21 @@ export async function getPlans(): Promise<Plan[]> {
     .select("*")
     .order("status", { ascending: true })
     .order("created_at", { ascending: false });
-  if (error) throw new Error(error.message);
-  return data ?? [];
+  if (error) {
+    console.error("[plans] getPlans error:", error.message);
+    return [];
+  }
+
+  // Get plan completions
+  const { data: completions } = await supabase
+    .from("plan_completions")
+    .select("*, player:players(*)");
+
+  return (data ?? []).map((plan) => ({
+    ...plan,
+    completions:
+      completions?.filter((c) => c.plan_id === plan.id) ?? [],
+  })) as Plan[];
 }
 
 export async function addPlan(title: string) {
@@ -52,6 +65,35 @@ export async function addPlan(title: string) {
   return { error: null };
 }
 
+export async function completePlan(
+  id: string,
+  playerIds: string[]
+) {
+  if (playerIds.length === 0) return { error: "Cal almenys un jugador." };
+
+  const supabase = await createClient();
+
+  // Mark plan as done
+  const { error: statusErr } = await supabase
+    .from("plans")
+    .update({ status: "done" as PlanStatus })
+    .eq("id", id);
+
+  if (statusErr) return { error: statusErr.message };
+
+  // Clear existing completions and insert new ones
+  await supabase.from("plan_completions").delete().eq("plan_id", id);
+  const { error: compErr } = await supabase.from("plan_completions").insert(
+    playerIds.map((pid) => ({ plan_id: id, player_id: pid }))
+  );
+
+  if (compErr) return { error: compErr.message };
+
+  revalidatePath("/plans", "layout");
+  revalidatePath("/gambling");
+  return { error: null };
+}
+
 export async function updatePlanStatus(id: string, status: PlanStatus) {
   const supabase = await createClient();
   const { error } = await supabase
@@ -60,7 +102,26 @@ export async function updatePlanStatus(id: string, status: PlanStatus) {
     .eq("id", id);
   if (error) return { error: error.message };
 
+  // If reverting from done, clear completions
+  if (status === "pending" || status === "discarded") {
+    await supabase.from("plan_completions").delete().eq("plan_id", id);
+  }
+
   revalidatePath("/plans", "layout");
+  revalidatePath("/gambling");
+  return { error: null };
+}
+
+export async function updatePlanPoints(id: string, points: number) {
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("plans")
+    .update({ points: Math.max(0, points) })
+    .eq("id", id);
+  if (error) return { error: error.message };
+
+  revalidatePath("/plans", "layout");
+  revalidatePath("/gambling");
   return { error: null };
 }
 
