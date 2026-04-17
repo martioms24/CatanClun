@@ -61,8 +61,10 @@ export default async function ForumPage() {
               <CardTitle>Punts</CardTitle>
             </CardHeader>
             <PointsLeaderboard points={points} />
-            <p className="font-garamond text-medieval-stone text-xs mt-3 text-center">
-              +5 per partida &middot; +20 per victòria &middot; +5 per quedada
+            <p className="font-garamond text-medieval-stone text-xs mt-3 text-center leading-relaxed">
+              1r +8 &middot; 2n +5 &middot; 3r +3 &middot; 4t+ +1
+              <br />
+              Quedada +4 &middot; Cims &middot; Plans +10
             </p>
           </Card>
         </div>
