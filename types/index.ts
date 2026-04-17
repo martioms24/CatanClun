@@ -192,3 +192,13 @@ export type AwardWin = {
   category: string;
   emoji: string;
 };
+
+// Cims (peaks)
+export type PeakCompletion = {
+  id: string;
+  peak_name: string;
+  completed_at: string;
+  created_at: string;
+  // joined
+  players?: Player[];
+};

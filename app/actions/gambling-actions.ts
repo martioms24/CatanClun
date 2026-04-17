@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { sendPushToAll } from "@/lib/push/send";
+import { PEAKS_100_CIMS } from "@/lib/peaks-100cims";
 import type { Bet, PlayerPoints, Player } from "@/types";
 
 // ── Point constants ──────────────────────────────────────────
@@ -43,6 +44,20 @@ async function getCurrentPlayerName(
   return data?.name ?? null;
 }
 
+// ── Cims point calculation ──────────────────────────────────
+function getCimPoints(peakName: string): number {
+  const peak = PEAKS_100_CIMS.find((p) => p.name === peakName);
+  if (!peak) return 0;
+  const base = peak.essential ? 8 : 6;
+  let bonus = 0;
+  if (peak.altitude >= 3000) bonus = 15;
+  else if (peak.altitude >= 2500) bonus = 8;
+  else if (peak.altitude >= 2000) bonus = 6;
+  else if (peak.altitude >= 1750) bonus = 4;
+  else if (peak.altitude >= 1000) bonus = 2;
+  return base + bonus;
+}
+
 // ── Points calculation ───────────────────────────────────────
 
 export async function getPlayerPointsAll(): Promise<PlayerPoints[]> {
@@ -75,6 +90,20 @@ export async function getPlayerPointsAll(): Promise<PlayerPoints[]> {
     .from("redemptions")
     .select("redeemed_by, cost");
 
+  // Peak completions per player
+  let cimsPlayerPoints: { player_id: string; peak_name: string }[] = [];
+  try {
+    const { data: compPlayers } = await supabase
+      .from("peak_completion_players")
+      .select("player_id, completion:peak_completions(peak_name)");
+    cimsPlayerPoints = (compPlayers ?? []).map((cp) => ({
+      player_id: cp.player_id,
+      peak_name: (cp.completion as unknown as { peak_name: string }).peak_name,
+    }));
+  } catch {
+    // Table may not exist yet
+  }
+
   const today = new Date().toISOString().slice(0, 10);
 
   return players.map((player: Player) => {
@@ -92,7 +121,13 @@ export async function getPlayerPointsAll(): Promise<PlayerPoints[]> {
     }) ?? [];
     const quedadaPoints = playerQuedadas.length * POINTS_QUEDADA_ATTENDED;
 
-    const earned = POINTS_STARTING_BONUS + gamePoints + quedadaPoints;
+    // Earned from cims
+    const playerCims = cimsPlayerPoints.filter((c) => c.player_id === player.id);
+    // Deduplicate by peak name (only count each peak once)
+    const uniquePeaks = new Set(playerCims.map((c) => c.peak_name));
+    const cimsPoints = [...uniquePeaks].reduce((sum, name) => sum + getCimPoints(name), 0);
+
+    const earned = POINTS_STARTING_BONUS + gamePoints + quedadaPoints + cimsPoints;
 
     // Gambling
     const playerWagers = wagers?.filter((w) => w.player_id === player.id) ?? [];

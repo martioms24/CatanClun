@@ -22,6 +22,7 @@ import {
   MessageSquare,
   Dices,
   Gift,
+  Mountain,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -63,6 +64,12 @@ const mainLinks: NavLink[] = [
     label: "Gambling",
     icon: Dices,
     activePrefixes: ["/gambling"],
+  },
+  {
+    href: "/cims",
+    label: "Cims",
+    icon: Mountain,
+    activePrefixes: ["/cims"],
   },
 ];
 
