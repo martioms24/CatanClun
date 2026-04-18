@@ -1,12 +1,14 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { createBet } from "@/app/actions/gambling-actions";
 import { Check, X, Plus, Minus } from "lucide-react";
 
 export function CreateBetForm({ onClose }: { onClose: () => void }) {
+  const router = useRouter();
   const [title, setTitle] = useState("");
   const [options, setOptions] = useState(["", ""]);
   const [error, setError] = useState<string | null>(null);
@@ -46,6 +48,7 @@ export function CreateBetForm({ onClose }: { onClose: () => void }) {
         setError(result.error);
         return;
       }
+      router.refresh();
       onClose();
     });
   }

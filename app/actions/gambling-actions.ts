@@ -349,7 +349,10 @@ export async function closeBet(betId: string) {
   return { error: null };
 }
 
-export async function resolveBet(betId: string, winningOptionId: string) {
+export async function resolveBet(betId: string, winningOptionIds: string[]) {
+  if (winningOptionIds.length === 0)
+    return { error: "Has de seleccionar almenys una opció guanyadora." };
+
   const supabase = await createClient();
   const playerId = await getCurrentPlayerId(supabase);
   if (!playerId) return { error: "No s'ha pogut identificar l'usuari." };
@@ -374,6 +377,7 @@ export async function resolveBet(betId: string, winningOptionId: string) {
     .eq("bet_id", betId);
 
   const numOptions = options?.length ?? 2;
+  const numWinners = winningOptionIds.length;
 
   // Get all wagers for this bet
   const { data: wagers } = await supabase
@@ -381,10 +385,13 @@ export async function resolveBet(betId: string, winningOptionId: string) {
     .select("id, option_id, amount")
     .eq("bet_id", betId);
 
-  // Calculate payouts for winners
+  // Calculate payouts — winners split the multiplier
   if (wagers) {
     for (const w of wagers) {
-      const payout = w.option_id === winningOptionId ? w.amount * numOptions : 0;
+      const isWinner = winningOptionIds.includes(w.option_id);
+      const payout = isWinner
+        ? Math.floor(w.amount * numOptions / numWinners)
+        : 0;
       await supabase
         .from("bet_wagers")
         .update({ payout })
@@ -392,24 +399,25 @@ export async function resolveBet(betId: string, winningOptionId: string) {
     }
   }
 
-  // Mark bet as resolved
+  // Mark bet as resolved (store first winner for backward compat)
   const { error } = await supabase
     .from("bets")
     .update({
       status: "resolved",
-      winning_option_id: winningOptionId,
+      winning_option_id: winningOptionIds[0],
       resolved_at: new Date().toISOString(),
     })
     .eq("id", betId);
 
   if (error) return { error: error.message };
 
-  // Get winning option label
-  const { data: winOpt } = await supabase
+  // Get winning option labels
+  const { data: winOpts } = await supabase
     .from("bet_options")
     .select("label")
-    .eq("id", winningOptionId)
-    .single();
+    .in("id", winningOptionIds);
+
+  const winLabels = winOpts?.map((o) => o.label).join(", ") ?? "?";
 
   const { data: betInfo } = await supabase
     .from("bets")
@@ -419,10 +427,88 @@ export async function resolveBet(betId: string, winningOptionId: string) {
 
   await sendPushToAll({
     title: "Aposta resolta!",
-    body: `${betInfo?.title ?? "Aposta"}: guanya "${winOpt?.label ?? "?"}"`,
+    body: `${betInfo?.title ?? "Aposta"}: guanya "${winLabels}"`,
     url: "/gambling",
     tag: `bet-${betId}`,
   });
+
+  revalidatePath("/gambling");
+  revalidatePath("/forum");
+  return { error: null };
+}
+
+export async function editBet(
+  betId: string,
+  title: string,
+  newOptions: { id?: string; label: string }[]
+) {
+  const trimmed = title.trim();
+  if (!trimmed) return { error: "El títol no pot estar buit." };
+
+  const validOptions = newOptions
+    .map((o) => ({ ...o, label: o.label.trim() }))
+    .filter((o) => o.label);
+  if (validOptions.length < 2) return { error: "Cal almenys 2 opcions vàlides." };
+
+  const supabase = await createClient();
+  const playerId = await getCurrentPlayerId(supabase);
+  if (!playerId) return { error: "No s'ha pogut identificar l'usuari." };
+
+  const { data: bet } = await supabase
+    .from("bets")
+    .select("created_by, status")
+    .eq("id", betId)
+    .single();
+
+  if (!bet) return { error: "Aposta no trobada." };
+  if (bet.created_by !== playerId)
+    return { error: "Només el creador pot editar l'aposta." };
+  if (bet.status !== "open")
+    return { error: "Només es poden editar apostes obertes." };
+
+  // Update title
+  await supabase.from("bets").update({ title: trimmed }).eq("id", betId);
+
+  // Get existing options with their wager counts
+  const { data: existingOptions } = await supabase
+    .from("bet_options")
+    .select("id, label")
+    .eq("bet_id", betId);
+
+  const existingIds = new Set((existingOptions ?? []).map((o) => o.id));
+  const keptIds = new Set(validOptions.filter((o) => o.id).map((o) => o.id!));
+
+  // Delete removed options (only those without wagers)
+  for (const opt of existingOptions ?? []) {
+    if (!keptIds.has(opt.id)) {
+      const { count } = await supabase
+        .from("bet_wagers")
+        .select("*", { count: "exact", head: true })
+        .eq("option_id", opt.id);
+      if ((count ?? 0) > 0) {
+        return { error: `No es pot eliminar "${opt.label}" perquè ja té apostes.` };
+      }
+      await supabase.from("bet_options").delete().eq("id", opt.id);
+    }
+  }
+
+  // Update existing options' labels
+  for (const opt of validOptions) {
+    if (opt.id && existingIds.has(opt.id)) {
+      await supabase
+        .from("bet_options")
+        .update({ label: opt.label })
+        .eq("id", opt.id);
+    }
+  }
+
+  // Insert new options
+  const newOpts = validOptions.filter((o) => !o.id);
+  if (newOpts.length > 0) {
+    await supabase
+      .from("bet_options")
+      .insert(newOpts.map((o) => ({ bet_id: betId, label: o.label })));
+  }
 
   revalidatePath("/gambling");
   revalidatePath("/forum");
